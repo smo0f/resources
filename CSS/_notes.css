@@ -1,0 +1,22 @@
+/* CSS syntax */
+selector {
+    property: value;
+}
+
+/* commentators */
+/* 
+    + adjacent sibling = div + ul {} // direct sibling/immediately after // have to share the same parent
+    ~ general siblings = div ~ ul {} // all siblings
+    > child = div > ul {} // only direct children
+    " " descendent = div ul {} // all descendants
+*/
+
+/* selecting based off an attribute */
+[disabled] {
+    /* code */
+}
+
+/* how to unset a property */
+.title {
+ color: unset;
+}
