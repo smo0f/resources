@@ -293,3 +293,98 @@
     | In 2016 1 book(s) released | 
     | In 2017 1 book(s) released | 
     +----------------------------+
+
+    -- the first book in author wrote
+    SELECT author_fname, 
+        author_lname,
+        MIN(released_year) AS 'year of first book'
+    FROM `books`
+    GROUP BY author_lname, author_fname;
+    +--------------+----------------+--------------------+
+    | author_fname | author_lname   | year of first book | 
+    +--------------+----------------+--------------------+
+    | Raymond      | Carver         | 1981               | 
+    | Michael      | Chabon         | 2000               | 
+    | Don          | DeLillo        | 1985               | 
+    | Dave         | Eggers         | 2001               | 
+    | David        | Foster Wallace | 2004               | 
+    | Neil         | Gaiman         | 2001               | 
+    | Dan          | Harris         | 2014               | 
+    | Freida       | Harris         | 2001               | 
+    | Jhumpa       | Lahiri         | 1996               | 
+    | George       | Saunders       | 2017               | 
+    | Patti        | Smith          | 2010               | 
+    | John         | Steinbeck      | 1945               | 
+    +--------------+----------------+--------------------+
+
+    -- one this book the author wrote, pages
+    SELECT
+        CONCAT(author_fname, ' ', author_lname) AS author,
+        MAX(pages) AS 'longest book'
+    FROM books
+    GROUP BY author_lname,
+            author_fname;
+    +----------------------+--------------+
+    | author               | longest book | 
+    +----------------------+--------------+
+    | Raymond Carver       | 526          | 
+    | Michael Chabon       | 634          | 
+    | Don DeLillo          | 320          | 
+    | Dave Eggers          | 504          | 
+    | David Foster Wallace | 343          | 
+    | Neil Gaiman          | 465          | 
+    | Dan Harris           | 256          | 
+    | Freida Harris        | 428          | 
+    | Jhumpa Lahiri        | 291          | 
+    | George Saunders      | 367          | 
+    | Patti Smith          | 304          | 
+    | John Steinbeck       | 181          | 
+    +----------------------+--------------+
+
+    -- SUM() up all the authors pages
+    SELECT
+        CONCAT(author_fname, ' ', author_lname) AS author,
+        SUM(pages) AS 'pages'
+    FROM books
+    GROUP BY author_lname,
+            author_fname;
+    +----------------------+-------+
+    | author               | pages | 
+    +----------------------+-------+
+    | Raymond Carver       | 702   | 
+    | Michael Chabon       | 634   | 
+    | Don DeLillo          | 320   | 
+    | Dave Eggers          | 1293  | 
+    | David Foster Wallace | 672   | 
+    | Neil Gaiman          | 977   | 
+    | Dan Harris           | 256   | 
+    | Freida Harris        | 428   | 
+    | Jhumpa Lahiri        | 489   | 
+    | George Saunders      | 367   | 
+    | Patti Smith          | 304   | 
+    | John Steinbeck       | 181   | 
+    +----------------------+-------+
+
+    -- get the average pages per author
+    SELECT
+        CONCAT(author_fname, ' ', author_lname) AS author,
+        AVG(pages) AS 'average book length'
+    FROM books
+    GROUP BY author_lname,
+            author_fname;
+    +----------------------+---------------------+
+    | author               | average book length | 
+    +----------------------+---------------------+
+    | Raymond Carver       | 351                 | 
+    | Michael Chabon       | 634                 | 
+    | Don DeLillo          | 320                 | 
+    | Dave Eggers          | 431                 | 
+    | David Foster Wallace | 336                 | 
+    | Neil Gaiman          | 325.6667            | 
+    | Dan Harris           | 256                 | 
+    | Freida Harris        | 428                 | 
+    | Jhumpa Lahiri        | 244.5               | 
+    | George Saunders      | 367                 | 
+    | Patti Smith          | 304                 | 
+    | John Steinbeck       | 181                 | 
+    +----------------------+---------------------+

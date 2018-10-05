@@ -19,6 +19,8 @@
     | Jhumpa Lahiri        | 
     ...
 
+    -- * example in group by section in adv_select.sql
+
     -- # CONCAT_WS() 
     -- contacts with predefined separator
     SELECT CONCAT_WS(' - ', title, author_fname, author_lname) AS book
@@ -117,6 +119,68 @@
     | hello world          | 
     +----------------------+
 
+    -- # MIN() and MAX()
+    -- define minimum and maximum values with your table
+    SELECT MIN(released_year) FROM `books`;
+    -- 0 to 10 limit 1
+    +--------------------+
+    | MIN(released_year) | 
+    +--------------------+
+    | 1945               | 
+    +--------------------+
+
+    SELECT MIN(title) FROM `books`;
+    -- a to z limit 1
+    +-------------+
+    | MIN(title)  | 
+    +-------------+
+    | 10% Happier | 
+    +-------------+
+
+    SELECT MAX(released_year) FROM `books`;
+    -- 10 to 0 limit 1
+    +--------------------+
+    | MAX(released_year) | 
+    +--------------------+
+    | 2017               | 
+    +--------------------+
+
+    SELECT MAX(title) FROM `books`;
+    -- z to a limit 1
+    +-------------+
+    | MAX(title)  | 
+    +-------------+
+    | White Noise | 
+    +-------------+
+
+    -- using sub query to select the book with the least amount of pages
+    SELECT title, pages 
+    FROM `books`
+    WHERE pages = (SELECT MIN(pages) FROM `books`);
+    -- SELECT title, pages 
+    -- FROM `books`
+    -- WHERE pages = (this query runs first = (176), then run the other query);
+    -- but here's a faster query
+    -- SELECT title, pages FROM books 
+    -- ORDER BY pages ASC LIMIT 1;
+    +-----------------------------------------------------+-------+
+    | title                                               | pages | 
+    +-----------------------------------------------------+-------+
+    | What We Talk About When We Talk About Love: Stories | 176   | 
+    +-----------------------------------------------------+-------+
+
+    -- using sub query to select the book with the most amount of pages
+    SELECT title, pages 
+    FROM `books`
+    WHERE pages = (SELECT MAX(pages) FROM `books`);
+    +-------------------------------------------+-------+
+    | title                                     | pages | 
+    +-------------------------------------------+-------+
+    | The Amazing Adventures of Kavalier & Clay | 634   | 
+    +-------------------------------------------+-------+
+
+    -- * example in group by section in adv_select.sql
+
 -- @ aggregate functions
 
     -- # COUNT()
@@ -142,4 +206,41 @@
     +-------------+
     | 6           | 
     +-------------+
+
+    -- * example in group by section in adv_select.sql
     
+    -- # SUM()
+    -- sums up the elements/columns selected
+    -- works with numbers
+    SELECT SUM(pages) FROM `books`;
+    +------------+
+    | SUM(pages) | 
+    +------------+
+    | 6623       | 
+    +------------+
+
+    -- this is what happens when you try to sum a string
+    SELECT SUM(author_fname) FROM `books`;
+    +-------------------+
+    | SUM(author_fname) | 
+    +-------------------+
+    | 0                 | 
+    +-------------------+
+
+    -- * example in group by section in adv_select.sql
+
+    -- # AVG()
+    -- creates an average of the element/column selected
+    -- works with numbers
+    SELECT AVG(pages) FROM `books`;
+    -- all books average the pages
+    +------------+
+    | AVG(pages) | 
+    +------------+
+    | 348.5789   | 
+    +------------+
+
+    -- * example in group by section in adv_select.sql
+
+
+
