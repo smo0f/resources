@@ -18,3 +18,9 @@
 
 -- @ advanced selects 
 -- adv_select.sql
+
+-- @ additional functionality
+-- additional_functionality.sql
+
+-- @ logical operators
+-- logical_operators.sql

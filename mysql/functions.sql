@@ -242,5 +242,196 @@
 
     -- * example in group by section in adv_select.sql
 
+-- @ date functions
+-- works with dates and datetimes
+-- https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html
+   
+    -- # CURDATE()
+    -- gives current date
+    SELECT CURDATE();
+    +------------------------------------------------------------+
+    | CURDATE()                                                  | 
+    +------------------------------------------------------------+
+    | Mon Oct 08 2018 00:00:00 GMT-0600 (Mountain Daylight Time) | 
+    +------------------------------------------------------------+
+
+    -- # CURTIME()
+    -- gives current time
+    SELECT CURTIME();
+    +-----------+
+    | CURTIME() | 
+    +-----------+
+    | 13:54:01  | 
+    +-----------+
+
+    -- # NOW()
+    -- gives current date time
+    SELECT NOW();
+    +------------------------------------------------------------+
+    | NOW()                                                      | 
+    +------------------------------------------------------------+
+    | Mon Oct 08 2018 13:54:54 GMT-0600 (Mountain Daylight Time) | 
+    +------------------------------------------------------------+
+
+    -- # DAY()
+    -- selects the given day
+    SELECT DAY(NOW());
+    -- 2018-08-10
+    +------------+
+    | DAY(NOW()) | 
+    +------------+
+    | 8          | 
+    +------------+
+
+    -- # DAYNAME()
+    -- selects the given days name
+    -- 2018-08-10
+    SELECT DAYNAME(NOW());
+    +----------------+
+    | DAYNAME(NOW()) | 
+    +----------------+
+    | Monday         | 
+    +----------------+
+
+    -- # DAYOFWEEK()
+    -- selects the given day of the week
+    -- 2018-09-10
+    SELECT DAYOFWEEK(NOW());
+    +------------------+
+    | DAYOFWEEK(NOW()) | 
+    +------------------+
+    | 3                | 
+    +------------------+
+
+    -- # DAYOFYEAR()
+    -- selects the given day of the year
+    -- 2018-09-10
+    SELECT DAYOFYEAR(NOW());
+    +------------------+
+    | DAYOFYEAR(NOW()) | 
+    +------------------+
+    | 282              | 
+    +------------------+
+
+    -- # MONTH()
+    -- selects the given month 
+    -- 2018-09-10
+    SELECT MONTH(NOW());
+    +--------------+
+    | MONTH(NOW()) | 
+    +--------------+
+    | 10           | 
+    +--------------+
+
+    -- # MONTHNAME()
+    -- selects the given month name
+    -- 2018-09-10
+    SELECT MONTHNAME(NOW());
+    +------------------+
+    | MONTHNAME(NOW()) | 
+    +------------------+
+    | October          | 
+    +------------------+
+
+    -- # QUARTER()
+    -- selects the given quarter
+    -- 2018-09-10
+    SELECT QUARTER(NOW());
+    +----------------+
+    | QUARTER(NOW()) | 
+    +----------------+
+    | 4              | 
+    +----------------+
+
+    -- # DATE_FORMAT()
+    -- allows you to format the date
+    -- https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-format
+    SELECT DATE_FORMAT('2009-10-04 22:23:00', '%W %M %Y');
+    +------------------------------------------------+
+    | DATE_FORMAT('2009-10-04 22:23:00', '%W %M %Y') | 
+    +------------------------------------------------+
+    | Sunday October 2009                            | 
+    +------------------------------------------------+
+
+    -- another format
+    SELECT DATE_FORMAT('2009-10-04 22:23:00', '%W-%M-%Y');
+    +------------------------------------------------+
+    | DATE_FORMAT('2009-10-04 22:23:00', '%W-%M-%Y') | 
+    +------------------------------------------------+
+    | Sunday-October-2009                            | 
+    +------------------------------------------------+
+
+    -- another format
+    SELECT DATE_FORMAT('2009-10-04 22:23:00', '%W the %D, %M %Y');
+    +--------------------------------------------------------+
+    | DATE_FORMAT('2009-10-04 22:23:00', '%W the %D, %M %Y') | 
+    +--------------------------------------------------------+
+    | Sunday the 4th, October 2009                           | 
+    +--------------------------------------------------------+
+
+    -- # DATEDIFF()
+    -- allows you to find the difference between a given date
+    SELECT DATEDIFF('2010-12-31','2010-11-30 23:59:59');
+    +----------------------------------------------+
+    | DATEDIFF('2010-12-31','2010-11-30 23:59:59') | 
+    +----------------------------------------------+
+    | 31                                           | 
+    +----------------------------------------------+
+
+    -- selecting the difference going forward
+    SELECT DATEDIFF('2010-11-30 23:59:59','2010-12-31');
+    +----------------------------------------------+
+    | DATEDIFF('2010-11-30 23:59:59','2010-12-31') | 
+    +----------------------------------------------+
+    | -31                                          | 
+    +----------------------------------------------+
+
+    -- # DATE_ADD()
+    -- adds a particular amount of time to a given date
+    SELECT DATE_ADD('2010-12-31 23:59:59', INTERVAL 1 DAY);
+    +-------------------------------------------------+
+    | DATE_ADD('2010-12-31 23:59:59', INTERVAL 1 DAY) | 
+    +-------------------------------------------------+
+    | 2011-01-01 23:59:59                             | 
+    +-------------------------------------------------+
+
+    -- different syntax for adding and subtracting
+        SELECT '2010-12-31 23:59:59' + INTERVAL 1 DAY;
+        +----------------------------------------+
+        | '2010-12-31 23:59:59' + INTERVAL 1 DAY | 
+        +----------------------------------------+
+        | 2011-01-01 23:59:59                    | 
+        +----------------------------------------+
+
+        SELECT '2010-12-31 23:59:59' - INTERVAL 1 DAY;
+        +----------------------------------------+
+        | '2010-12-31 23:59:59' - INTERVAL 1 DAY | 
+        +----------------------------------------+
+        | 2010-12-30 23:59:59                    | 
+        +----------------------------------------+
+
+    -- using date_add with date_format
+    SELECT DATE_FORMAT(DATE_ADD('2010-12-31 23:59:59', INTERVAL 1 DAY), '%W the %D, %M %Y') AS 'date';
+    +--------------------------------+
+    | date                           | 
+    +--------------------------------+
+    | Saturday the 1st, January 2011 | 
+    +--------------------------------+
+
+    -- using date_add with date_format, different syntax for adding and subtracting
+    SELECT DATE_FORMAT('2010-12-31 23:59:59' + INTERVAL 1 DAY, '%W the %D, %M %Y') AS 'date';
+    +--------------------------------+
+    | date                           | 
+    +--------------------------------+
+    | Saturday the 1st, January 2011 | 
+    +--------------------------------+
+
+    -- chaining interval amounts
+    SELECT DATE_FORMAT('2010-12-29 23:59:59' + INTERVAL 1 MONTH + INTERVAL 1 DAY, '%W the %D, %M %Y') AS 'date';
+    +-------------------------------+
+    | date                          | 
+    +-------------------------------+
+    | Sunday the 30th, January 2011 | 
+    +-------------------------------+
 
 
