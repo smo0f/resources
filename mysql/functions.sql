@@ -181,6 +181,16 @@
 
     -- * example in group by section in adv_select.sql
 
+    -- # CAST()
+    -- force it to the type of data
+    -- you can switch a date to the datetime and a daytime to date
+    SELECT CAST('2017-05-02' AS DATETIME);
+    +------------------------------------------------------------+
+    | CAST('2017-05-02' AS DATETIME)                             | 
+    +------------------------------------------------------------+
+    | Tue May 02 2017 00:00:00 GMT-0600 (Mountain Daylight Time) | 
+    +------------------------------------------------------------+
+
 -- @ aggregate functions
 
     -- # COUNT()
