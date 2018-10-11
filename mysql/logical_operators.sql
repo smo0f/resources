@@ -283,6 +283,21 @@ WHERE author_lname IN ('Carver', 'Lahiri', 'Smith');
 | Where Im Calling From: Selected Stories             | Carver       | 
 +-----------------------------------------------------+--------------+
 
+-- other examples
+-- finding the first letter of the title
+SELECT title, author_lname FROM books 
+WHERE SUBSTR(author_lname,1,1) IN ('C', 'S');
++-----------------------------------------------------+--------------+
+| title                                               | author_lname | 
++-----------------------------------------------------+--------------+
+| The Amazing Adventures of Kavalier & Clay           | Chabon       | 
+| Just Kids                                           | Smith        | 
+| What We Talk About When We Talk About Love: Stories | Carver       | 
+| Where Im Calling From: Selected Stories             | Carver       | 
+| Cannery Row                                         | Steinbeck    | 
+| Lincoln In The Bardo                                | Saunders     | 
++-----------------------------------------------------+--------------+
+
 -- # NOT IN 
 -- select all that do not have these
 SELECT title, released_year FROM books
@@ -328,10 +343,10 @@ ORDER BY released_year;
 -- select based off of case statements
 -- always has a CASE, WHEN, THEN, ELSE, and END
 SELECT title, released_year,
-       CASE 
-         WHEN released_year >= 2000 THEN 'Modern Lit'
-         ELSE '20th Century Lit'
-       END AS GENRE
+    CASE 
+        WHEN released_year >= 2000 THEN 'Modern Lit'
+        ELSE '20th Century Lit'
+    END AS GENRE
 FROM books;
 +-----------------------------------------------------+---------------+------------------+
 | title                                               | released_year | GENRE            | 
@@ -400,4 +415,52 @@ FROM books;
 | A Heartbreaking Work of Staggering Genius           | 104            | ***   | 
 | Coraline                                            | 100            | **    | 
 | What We Talk About When We Talk About Love: Stories | 23             | *     | 
+...
+
+-- other examples
+SELECT title, author_lname,
+    CASE
+        WHEN COUNT(*) > 1 THEN CONCAT(COUNT(*), ' books')
+        ELSE '1 book'
+    END AS 'count'
+FROM `books`
+GROUP BY author_lname, author_fname;
++-----------------------------------------------------+----------------+---------+
+| title                                               | author_lname   | count   | 
++-----------------------------------------------------+----------------+---------+
+| What We Talk About When We Talk About Love: Stories | Carver         | 2 books | 
+| The Amazing Adventures of Kavalier & Clay           | Chabon         | 1 book  | 
+| White Noise                                         | DeLillo        | 1 book  | 
+| A Hologram for the King: A Novel                    | Eggers         | 3 books | 
+| Oblivion: Stories                                   | Foster Wallace | 2 books | 
+| Norse Mythology                                     | Gaiman         | 3 books | 
+| 10% Happier                                         | Harris         | 1 book  | 
+| fake_book                                           | Harris         | 1 book  | 
+| The Namesake                                        | Lahiri         | 2 books | 
+| Lincoln In The Bardo                                | Saunders       | 1 book  | 
+| Just Kids                                           | Smith          | 1 book  | 
+| Cannery Row                                         | Steinbeck      | 1 book  | 
++-----------------------------------------------------+----------------+---------+
+
+SELECT title, author_lname,
+    CASE
+        WHEN title LIKE '%stories%' THEN 'Short Story'
+        WHEN title IN ('Just Kids', 'A Heartbreaking Work of Staggering Genius') THEN 'Memoir'
+        ELSE 'Novel'
+    END AS type
+FROM `books`;
++-----------------------------------------------------+----------------+-------------+
+| title                                               | author_lname   | type        | 
++-----------------------------------------------------+----------------+-------------+
+| The Namesake                                        | Lahiri         | Novel       | 
+| Norse Mythology                                     | Gaiman         | Novel       | 
+| American Gods                                       | Gaiman         | Novel       | 
+| Interpreter of Maladies                             | Lahiri         | Novel       | 
+| A Hologram for the King: A Novel                    | Eggers         | Novel       | 
+| The Circle                                          | Eggers         | Novel       | 
+| The Amazing Adventures of Kavalier & Clay           | Chabon         | Novel       | 
+| Just Kids                                           | Smith          | Memoir      | 
+| A Heartbreaking Work of Staggering Genius           | Eggers         | Memoir      | 
+| Coraline                                            | Gaiman         | Novel       | 
+| What We Talk About When We Talk About Love: Stories | Carver         | Short Story | 
 ...

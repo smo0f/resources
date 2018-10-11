@@ -9,7 +9,6 @@
     -- concatenates columns
     SELECT CONCAT(author_fname, ' ',  author_lname) AS full_name
     FROM books;
-
     +----------------------+
     | full_name            | 
     +----------------------+
@@ -25,7 +24,6 @@
     -- contacts with predefined separator
     SELECT CONCAT_WS(' - ', title, author_fname, author_lname) AS book
     FROM `books`;
-
     +------------------------------------------------------------------------+
     | book                                                                   | 
     +------------------------------------------------------------------------+
@@ -43,7 +41,6 @@
     -- SUBSTRING('hello world', -3) = "rld" SUBSTRING('string/column string', end to start)
     -- you can also use SUBSTR()
     SELECT SUBSTRING(title, 1, 10) AS 'Short Title' FROM `books`;
-
     +-------------+
     | Short Title | 
     +-------------+
@@ -53,7 +50,6 @@
     ...
 
     SELECT CONCAT(SUBSTRING(title, 1, 10), '...') AS 'Short Title'  FROM books;
-
     +---------------+
     | Short Title   | 
     +---------------+
@@ -62,11 +58,41 @@
     | American G... |
     ...
 
+    -- other examples
+    -- finding the first letter of the title
+    SELECT title, author_lname 
+    FROM books 
+    WHERE SUBSTR(author_lname,1,1) = 'C' 
+        OR SUBSTR(author_lname,1,1) = 'S';
+    +-----------------------------------------------------+--------------+
+    | title                                               | author_lname | 
+    +-----------------------------------------------------+--------------+
+    | The Amazing Adventures of Kavalier & Clay           | Chabon       | 
+    | Just Kids                                           | Smith        | 
+    | What We Talk About When We Talk About Love: Stories | Carver       | 
+    | Where Im Calling From: Selected Stories             | Carver       | 
+    | Cannery Row                                         | Steinbeck    | 
+    | Lincoln In The Bardo                                | Saunders     | 
+    +-----------------------------------------------------+--------------+
+    
+    -- finding the first letter of the title
+    SELECT title, author_lname FROM books 
+    WHERE SUBSTR(author_lname,1,1) IN ('C', 'S');
+    +-----------------------------------------------------+--------------+
+    | title                                               | author_lname | 
+    +-----------------------------------------------------+--------------+
+    | The Amazing Adventures of Kavalier & Clay           | Chabon       | 
+    | Just Kids                                           | Smith        | 
+    | What We Talk About When We Talk About Love: Stories | Carver       | 
+    | Where Im Calling From: Selected Stories             | Carver       | 
+    | Cannery Row                                         | Steinbeck    | 
+    | Lincoln In The Bardo                                | Saunders     | 
+    +-----------------------------------------------------+--------------+
+
     -- # REPLACE()
     -- REPLACE('Hello World', 'Hell', '%$#@') REPLACE('string/column string', 'string to replace', 'replace with string')
     -- it is case sensitive
     SELECT REPLACE(title, 'e', '3') AS 'new titles' FROM `books`
-
     +-----------------------------------------------------+
     | new titles                                          | 
     +-----------------------------------------------------+
@@ -78,7 +104,6 @@
     -- # REVERSE()
     -- reverses a given string
     SELECT REVERSE('Hello World');
-
     +------------------------+
     | REVERSE('Hello World') | 
     +------------------------+
@@ -88,7 +113,6 @@
     -- # CHAR_LENGTH()
     -- gets the links of a string
     SELECT title, CHAR_LENGTH(title) AS 'title length' FROM `books`
-
     +-----------------------------------------------------+--------------+
     | title                                               | title length | 
     +-----------------------------------------------------+--------------+
@@ -102,7 +126,6 @@
     -- # UPPER()
     -- caps all the letters in a string
     SELECT UPPER('Hello World');
-
     +----------------------+
     | UPPER('Hello World') | 
     +----------------------+
@@ -112,7 +135,6 @@
     -- # LOWER()
     -- lowercase all the letters in a string
     SELECT LOWER('Hello World');
-
     +----------------------+
     | LOWER('Hello World') | 
     +----------------------+

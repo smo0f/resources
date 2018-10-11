@@ -319,3 +319,52 @@ SELECT CONCAT(author_fname, ' ', author_lname) AS author, pages FROM books
 ORDER BY pages DESC LIMIT 1;
 
 SELECT released_year AS year, COUNT(*) AS '# books', AVG(pages) AS 'avg pages'  FROM `books` GROUP BY released_year;
+
+SELECT title, released_year
+FROM `books`
+WHERE released_year < 1980
+ORDER BY released_year;
+
+SELECT title, CONCAT(author_fname, ' ', author_lname) AS author
+FROM `books`
+WHERE author_lname = 'Eggers'
+    OR author_lname = 'Chabon'
+ORDER BY author_lname ASC;
+
+SELECT title, author_lname 
+FROM `books` 
+WHERE author_lname IN ('Eggers','Chabon')
+ORDER BY author_lname ASC;
+
+SELECT title, author_lname, released_year
+FROM `books`
+WHERE author_lname = 'Lahiri'
+    AND released_year > 2000
+ORDER BY released_year;
+
+SELECT title, pages 
+FROM `books`
+WHERE pages BETWEEN 100 AND 200
+ORDER BY pages;
+
+SELECT title, author_lname 
+FROM `books`     
+WHERE author_lname LIKE 'c%'
+    OR author_lname LIKE 's%';
+
+SELECT title, author_lname,
+    CASE
+        WHEN title LIKE '%stories%' THEN 'Short Story'
+        WHEN title IN ('Just Kids', 'A Heartbreaking Work of Staggering Genius') THEN 'Memoir'
+        ELSE 'Novel'
+    END AS type
+FROM `books`;
+
+SELECT title, author_lname,
+    CASE
+        WHEN COUNT(*) > 1 THEN CONCAT(COUNT(*), ' books')
+        ELSE '1 book'
+    END AS 'count'
+FROM `books`
+GROUP BY author_lname, author_fname;
+

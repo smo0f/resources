@@ -2,10 +2,8 @@
 
     -- # DISTINCT
     -- gets distinct records
-
     -- distinct last names whether or not multiple authors have the same last name
     SELECT DISTINCT author_lname FROM books
-
     +----------------+
     | author_lname   | 
     +----------------+
@@ -24,7 +22,6 @@
 
     -- distinct concatenation gives the true number of authors 
     SELECT DISTINCT CONCAT(author_fname, ' ', author_lname) AS 'full name' FROM books
-
     +----------------------+
     | full name            | 
     +----------------------+
@@ -45,7 +42,6 @@
     -- same as above just without concatenation, MySQL makes the columns together distinct
     -- makes combination of columns distinct
     SELECT DISTINCT author_fname, author_lname FROM books
-
     +--------------+----------------+
     | author_fname | author_lname   | 
     +--------------+----------------+
