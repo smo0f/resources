@@ -119,6 +119,24 @@
     | Dan          | Harris         | 256   |
     ...
 
+    -- order by alias (average)
+    SELECT students.first_name, IFNULL(AVG(papers.grade), 0) AS average
+    FROM `students` 
+    LEFT JOIN `papers`
+        ON students.id = papers.student_id
+    GROUP BY students.id
+    ORDER BY average DESC;
+    +------------+---------+
+    | first_name | average | 
+    +------------+---------+
+    | Samantha   | 96      | 
+    | Carlos     | 89      | 
+    | Caleb      | 67.5    | 
+    | Lisa       | 0       | 
+    | Raj        | 0       | 
+    +------------+---------+
+
+
 
     -- # LIMIT
     SELECT author_fname, author_lname, pages FROM `books` ORDER BY 3 LIMIT 2;
@@ -384,3 +402,167 @@
     | Patti Smith          | 304                 | 
     | John Steinbeck       | 181                 | 
     +----------------------+---------------------+
+
+    SELECT COUNT(orders.id) AS 'order count',
+        AVG( orders.amount) AS 'average order amount', 
+        CONCAT(customers.first_name, ' ', customers.last_name) AS customer
+    FROM `orders`, `customers`
+    WHERE orders.customer_id = customers.id
+    GROUP BY orders.customer_id
+    ORDER BY customers.first_name, customers.last_name;
+    +-------------+----------------------+----------------+
+    | order count | average order amount | customer       | 
+    +-------------+----------------------+----------------+
+    | 1           | 450.25               | Bette Davis    | 
+    | 2           | 67.745               | Boy George     | 
+    | 2           | 406.585              | George Michael | 
+    +-------------+----------------------+----------------+
+
+    -- # JOINS
+    -- https://www.w3schools.com/sql/sql_join.asp
+    -- Joins two tables to gether
+    -- implicit join, cross join
+    SELECT *
+    FROM `customers`, `orders`;
+    -- output to big
+
+        -- # INNER JOIN
+        -- gets all intersecting data, excludes any non-matches
+        -- explicit inner join
+        -- examples
+        SELECT * FROM customers
+        JOIN orders -- JOIN Implies INNER JOIN
+            ON customers.id = orders.customer_id;
+        -- output to big
+
+        SELECT orders.id AS 'order id', 
+            orders.customer_id, 
+            orders.amount, 
+            CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+            customers.id AS 'customer id'
+        FROM customers
+        INNER JOIN orders
+            ON customers.id = orders.customer_id;
+        +----------+-------------+--------+----------------+-------------+
+        | order id | customer_id | amount | customer       | customer id | 
+        +----------+-------------+--------+----------------+-------------+
+        | 1        | 1           | 99.99  | Boy George     | 1           | 
+        | 2        | 1           | 35.5   | George Michael | 2           | 
+        | 3        | 2           | 800.67 | David Bowie    | 3           | 
+        | 4        | 2           | 12.5   | Blue Steele    | 4           | 
+        | 5        | 5           | 450.25 | Bette Davis    | 5           | 
+        +----------+-------------+--------+----------------+-------------+
+
+        -- implicit inner join
+        -- examples
+        SELECT orders.id AS 'order id', 
+            orders.customer_id, 
+            orders.amount, 
+            CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+            customers.id AS 'customer id'
+        FROM `orders`, `customers`
+        WHERE orders.customer_id = customers.id
+        ORDER BY customers.first_name, customers.last_name;
+        +----------+-------------+--------+----------------+-------------+
+        | order id | customer_id | amount | customer       | customer id | 
+        +----------+-------------+--------+----------------+-------------+
+        | 5        | 5           | 450.25 | Bette Davis    | 5           | 
+        | 2        | 1           | 35.5   | Boy George     | 1           | 
+        | 1        | 1           | 99.99  | Boy George     | 1           | 
+        | 4        | 2           | 12.5   | George Michael | 2           | 
+        | 3        | 2           | 800.67 | George Michael | 2           | 
+        +----------+-------------+--------+----------------+-------------+
+        
+        SELECT COUNT(orders.id) AS 'order count',
+            AVG( orders.amount) AS 'average order amount', 
+            CONCAT(customers.first_name, ' ', customers.last_name) AS customer
+        FROM `orders`, `customers`
+        WHERE orders.customer_id = customers.id
+        GROUP BY orders.customer_id
+        ORDER BY customers.first_name, customers.last_name;
+        +-------------+----------------------+----------------+
+        | order count | average order amount | customer       | 
+        +-------------+----------------------+----------------+
+        | 1           | 450.25               | Bette Davis    | 
+        | 2           | 67.745               | Boy George     | 
+        | 2           | 406.585              | George Michael | 
+        +-------------+----------------------+----------------+
+
+        -- # LEFT JOIN
+        -- selects all data from the left table and also shows applicable matches from the right table
+        SELECT *
+        FROM customers
+        LEFT JOIN orders
+            ON customers.id = orders.customer_id;
+        -- output to big
+
+        -- shows all data from customers even if no join data is available
+        -- left = customers right = orders
+        SELECT orders.id AS 'order id', 
+            orders.customer_id, 
+            orders.amount, 
+            CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+            customers.id AS 'customer id'
+        FROM customers
+        LEFT JOIN orders
+            ON customers.id = orders.customer_id;
+        +----------+-------------+--------+----------------+-------------+
+        | order id | customer_id | amount | customer       | customer id | 
+        +----------+-------------+--------+----------------+-------------+
+        | 1        | 1           | 99.99  | Boy George     | 1           | 
+        | 2        | 1           | 35.5   | Boy George     | 1           | 
+        | 3        | 2           | 800.67 | George Michael | 2           | 
+        | 4        | 2           | 12.5   | George Michael | 2           | 
+        | 5        | 5           | 450.25 | Bette Davis    | 5           | 
+        | null     | null        | null   | David Bowie    | 3           | 
+        | null     | null        | null   | Blue Steele    | 4           | 
+        +----------+-------------+--------+----------------+-------------+
+
+        -- why would I do this?
+            -- if I wanted to know all the high spending customers and send them a thank you
+            -- and if I wanted to know all the customers that haven't bought anything and send them a coupon
+            -- example below
+        SELECT COUNT(orders.id) AS 'order count',
+            IFNULL(AVG(orders.amount), 0) AS 'average order amount',
+            IFNULL(SUM(orders.amount), 0)  AS 'total spent',
+            CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+            CASE
+                WHEN COUNT(orders.id) >= 1 THEN 'thank them'
+                ELSE 'send a coupon'
+            END AS 'action'
+        FROM customers
+        LEFT JOIN orders
+            ON customers.id = orders.customer_id
+        GROUP BY customers.id
+        ORDER BY customers.first_name, customers.last_name;
+        +-------------+----------------------+-------------+----------------+---------------+
+        | order count | average order amount | total spent | customer       | action        | 
+        +-------------+----------------------+-------------+----------------+---------------+
+        | 1           | 450.25               | 450.25      | Bette Davis    | thank them    | 
+        | 0           | 0                    | 0           | Blue Steele    | send a coupon | 
+        | 2           | 67.745               | 135.49      | Boy George     | thank them    | 
+        | 0           | 0                    | 0           | David Bowie    | send a coupon | 
+        | 2           | 406.585              | 813.17      | George Michael | thank them    | 
+        +-------------+----------------------+-------------+----------------+---------------+
+
+        -- # RIGHT JOIN
+        -- selects all data from the right table and also shows applicable matches from the left table
+        -- shows all data from customers even if no join data is available
+        -- left = customers right = orders
+        SELECT orders.id AS 'order id', 
+            orders.customer_id, 
+            orders.amount, 
+            CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+            customers.id AS 'customer id'
+        FROM customers
+        RIGHT JOIN orders
+            ON customers.id = orders.customer_id;
+        +----------+-------------+--------+----------------+-------------+
+        | order id | customer_id | amount | customer       | customer id | 
+        +----------+-------------+--------+----------------+-------------+
+        | 1        | 1           | 99.99  | Boy George     | 1           | 
+        | 2        | 1           | 35.5   | Boy George     | 1           | 
+        | 3        | 2           | 800.67 | George Michael | 2           | 
+        | 4        | 2           | 12.5   | George Michael | 2           | 
+        | 5        | 5           | 450.25 | Bette Davis    | 5           | 
+        +----------+-------------+--------+----------------+-------------+

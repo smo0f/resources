@@ -23,7 +23,7 @@
     Numeric
     DECIMAL
         -- allows for decimal points
-        -- DECIMAL(13,2), DECIMAL(max digits, including decimal points,how many decimal points) = 999.99
+        -- DECIMAL(5,2), DECIMAL(max digits, including decimal points,how many decimal points) = 999.99
     BIT
     -- full list https://www.w3schools.com/sql/sql_datatypes.asp
 

@@ -284,7 +284,7 @@ WHERE author_lname IN ('Carver', 'Lahiri', 'Smith');
 +-----------------------------------------------------+--------------+
 
 -- other examples
--- finding the first letter of the title
+-- finding the first letter of the title with IN
 SELECT title, author_lname FROM books 
 WHERE SUBSTR(author_lname,1,1) IN ('C', 'S');
 +-----------------------------------------------------+--------------+
@@ -338,6 +338,73 @@ ORDER BY released_year;
 | The Circle                                | 2013          | 
 | Lincoln In The Bardo                      | 2017          | 
 +-------------------------------------------+---------------+
+
+-- # IFNULL()
+-- if the statement is null replace it with this else leave as is
+-- IFNULL(SUM(orders.amount), 0)
+-- IFNULL(check to see if null/if not null use this value, else, use this value if null)
+SELECT COUNT(orders.id) AS 'order count',
+    IFNULL(AVG(orders.amount), 0) AS 'average order amount',
+    IFNULL(SUM(orders.amount), 0)  AS 'total spent',
+    CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+    CASE
+        WHEN COUNT(orders.id) >= 1 THEN 'thank them'
+        ELSE 'send a coupon'
+    END AS 'action'
+FROM customers
+LEFT JOIN orders
+    ON customers.id = orders.customer_id
+GROUP BY customers.id
+ORDER BY customers.first_name, customers.last_name;
++-------------+----------------------+-------------+----------------+---------------+
+| order count | average order amount | total spent | customer       | action        | 
++-------------+----------------------+-------------+----------------+---------------+
+| 1           | 450.25               | 450.25      | Bette Davis    | thank them    | 
+| 0           | 0                    | 0           | Blue Steele    | send a coupon | 
+| 2           | 67.745               | 135.49      | Boy George     | thank them    | 
+| 0           | 0                    | 0           | David Bowie    | send a coupon | 
+| 2           | 406.585              | 813.17      | George Michael | thank them    | 
++-------------+----------------------+-------------+----------------+---------------+
+
+-- other example
+SELECT students.first_name,     
+    IFNULL(papers.title, 'Missing') AS title, 
+    IFNULL(papers.grade, 0) AS grade
+FROM `students`
+LEFT JOIN `papers`
+    ON students.id = papers.student_id;
++------------+---------------------------------------+-------+
+| Caleb      | My First Book Report                  | 60    | 
+| Caleb      | My Second Book Report                 | 75    | 
+| Samantha   | Russian Lit Through The Ages          | 94    | 
+| Samantha   | De Montaigne and The Art of The Essay | 98    | 
+| Carlos     | Borges and Magical Realism            | 89    | 
+| Raj        | Missing                               | 0     | 
+| Lisa       | Missing                               | 0     | 
++------------+---------------------------------------+-------+
+
+-- # IS NULL and IS NOT NULL
+SELECT students.first_name, 
+IFNULL(AVG(papers.grade), 0) AS average,
+CASE
+    WHEN AVG(papers.grade) IS NULL THEN 'FAILING'
+    WHEN AVG(papers.grade) >= 75 THEN 'PASSING'
+    ELSE 'FAILING'
+END AS 'passing_status'
+FROM `students` 
+LEFT JOIN `papers`
+    ON students.id = papers.student_id
+GROUP BY students.id
+ORDER BY average DESC;
++------------+---------+----------------+
+| first_name | average | passing_status | 
++------------+---------+----------------+
+| Samantha   | 96      | PASSING        | 
+| Carlos     | 89      | PASSING        | 
+| Caleb      | 67.5    | FAILING        | 
+| Lisa       | 0       | FAILING        | 
+| Raj        | 0       | FAILING        | 
++------------+---------+----------------+
 
 -- # CASE STATEMENTS
 -- select based off of case statements

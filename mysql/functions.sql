@@ -239,6 +239,21 @@
     | 6           | 
     +-------------+
 
+    SELECT COUNT(orders.id) AS 'order count',
+        AVG( orders.amount) AS 'average order amount', 
+        CONCAT(customers.first_name, ' ', customers.last_name) AS customer
+    FROM `orders`, `customers`
+    WHERE orders.customer_id = customers.id
+    GROUP BY orders.customer_id
+    ORDER BY customers.first_name, customers.last_name;
+    +-------------+----------------------+----------------+
+    | order count | average order amount | customer       | 
+    +-------------+----------------------+----------------+
+    | 1           | 450.25               | Bette Davis    | 
+    | 2           | 67.745               | Boy George     | 
+    | 2           | 406.585              | George Michael | 
+    +-------------+----------------------+----------------+
+
     -- * example in group by section in adv_select.sql
     
     -- # SUM()
@@ -271,6 +286,21 @@
     +------------+
     | 348.5789   | 
     +------------+
+
+    SELECT COUNT(orders.id) AS 'order count',
+        AVG( orders.amount) AS 'average order amount', 
+        CONCAT(customers.first_name, ' ', customers.last_name) AS customer
+    FROM `orders`, `customers`
+    WHERE orders.customer_id = customers.id
+    GROUP BY orders.customer_id
+    ORDER BY customers.first_name, customers.last_name;
+    +-------------+----------------------+----------------+
+    | order count | average order amount | customer       | 
+    +-------------+----------------------+----------------+
+    | 1           | 450.25               | Bette Davis    | 
+    | 2           | 67.745               | Boy George     | 
+    | 2           | 406.585              | George Michael | 
+    +-------------+----------------------+----------------+
 
     -- * example in group by section in adv_select.sql
 
