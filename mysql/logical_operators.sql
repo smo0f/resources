@@ -318,6 +318,8 @@ ORDER BY released_year;
 | Lincoln In The Bardo                      | 2017          | 
 +-------------------------------------------+---------------+
 
+-- # HAVING
+-- like where clause but can use aliases
 
 -- # % modulo
 -- can help you select all even or odd numbers
@@ -405,6 +407,46 @@ ORDER BY average DESC;
 | Lisa       | 0       | FAILING        | 
 | Raj        | 0       | FAILING        | 
 +------------+---------+----------------+
+
+-- IS NULL, other example
+SELECT series.title
+FROM `series`
+LEFT JOIN `reviews`
+    ON series.id = reviews.series_id
+WHERE reviews.rating IS NULL;
++-----------------------+
+| title                 | 
++-----------------------+
+| Malcolm In The Middle | 
+| Pushing Daisies       | 
++-----------------------+
+
+-- IS NOT NULL
+SELECT reviewers.first_name, 
+    reviewers.last_name, 
+    COUNT(reviews.rating) AS COUNT,
+    IFNULL(MIN(reviews.rating), 0) AS MIN,
+    IFNULL(MAX(reviews.rating), 0) AS MAX,
+    IFNULL(AVG(reviews.rating), 0) AS AVG,
+    CASE
+        WHEN reviews.rating IS NOT NULL THEN 'ACTIVE'
+        ELSE 'INACTIVE'
+    END AS 'STATUS'
+FROM `reviewers`
+LEFT JOIN `reviews`
+    ON reviewers.id = reviews.reviewer_id
+GROUP BY reviewers.id;
++------------+-----------+-------+-----+-----+---------+----------+
+| first_name | last_name | COUNT | MIN | MAX | AVG     | STATUS   | 
++------------+-----------+-------+-----+-----+---------+----------+
+| Thomas     | Stoneman  | 5     | 7   | 9.5 | 8.02    | ACTIVE   | 
+| Wyatt      | Skaggs    | 9     | 5.5 | 9.3 | 7.8     | ACTIVE   | 
+| Kimbra     | Masters   | 9     | 6.8 | 9   | 7.98889 | ACTIVE   | 
+| Domingo    | Cortes    | 10    | 5.8 | 9.1 | 7.83    | ACTIVE   | 
+| Colt       | Steele    | 10    | 4.5 | 9.9 | 8.77    | ACTIVE   | 
+| Pinkie     | Petit     | 4     | 4.3 | 8.8 | 7.25    | ACTIVE   | 
+| Marlon     | Crafford  | 0     | 0   | 0   | 0       | INACTIVE | 
++------------+-----------+-------+-----+-----+---------+----------+
 
 -- # CASE STATEMENTS
 -- select based off of case statements
@@ -531,3 +573,29 @@ FROM `books`;
 | Coraline                                            | Gaiman         | Novel       | 
 | What We Talk About When We Talk About Love: Stories | Carver         | Short Story | 
 ...
+
+-- # IF()
+-- an if statement
+-- IF(condition, if true, else)
+SELECT reviewers.first_name, 
+    reviewers.last_name, 
+    COUNT(reviews.rating) AS COUNT,
+    IFNULL(MIN(reviews.rating), 0) AS MIN,
+    IFNULL(MAX(reviews.rating), 0) AS MAX,
+    IFNULL(AVG(reviews.rating), 0) AS AVG,
+    IF(reviews.rating IS NOT NULL, 'ACTIVE', 'INACTIVE') AS 'STATUS'
+FROM `reviewers`
+LEFT JOIN `reviews`
+    ON reviewers.id = reviews.reviewer_id
+GROUP BY reviewers.id;
++------------+-----------+-------+-----+-----+---------+----------+
+| first_name | last_name | COUNT | MIN | MAX | AVG     | STATUS   | 
++------------+-----------+-------+-----+-----+---------+----------+
+| Thomas     | Stoneman  | 5     | 7   | 9.5 | 8.02    | ACTIVE   | 
+| Wyatt      | Skaggs    | 9     | 5.5 | 9.3 | 7.8     | ACTIVE   | 
+| Kimbra     | Masters   | 9     | 6.8 | 9   | 7.98889 | ACTIVE   | 
+| Domingo    | Cortes    | 10    | 5.8 | 9.1 | 7.83    | ACTIVE   | 
+| Colt       | Steele    | 10    | 4.5 | 9.9 | 8.77    | ACTIVE   | 
+| Pinkie     | Petit     | 4     | 4.3 | 8.8 | 7.25    | ACTIVE   | 
+| Marlon     | Crafford  | 0     | 0   | 0   | 0       | INACTIVE | 
++------------+-----------+-------+-----+-----+---------+----------+

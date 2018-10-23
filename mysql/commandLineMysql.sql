@@ -112,6 +112,16 @@
         FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE CASCADE
     );
 
+    -- double primary key, restricts individuals from liking the same picture more than once
+    CREATE TABLE likes (
+        user_id INTEGER NOT NULL,
+        photo_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(photo_id) REFERENCES photos(id),
+        PRIMARY KEY(user_id, photo_id)
+    );
+
     -- ON DELETE CASCADE 
     -- this refers to whenever a customer (primary key) is deleted the corresponding orders (foreign key constraint) will also be deleted.
 

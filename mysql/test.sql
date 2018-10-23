@@ -583,6 +583,64 @@ INSERT INTO reviews(series_id, reviewer_id, rating) VALUES
     (13,3,8.0),(13,4,7.2),
     (14,2,8.5),(14,3,8.9),(14,4,8.9);
 
-SELECT * FROM `reviews`;
+SELECT series.title, reviews.rating FROM `series`
+INNER JOIN `reviews`
+    ON series.id = reviews.series_id
+ORDER BY reviews.rating DESC;
 
+SELECT series.title, AVG(reviews.rating) AS avg_rating FROM `series`
+INNER JOIN `reviews`
+    ON series.id = reviews.series_id
+GROUP BY series.id
+ORDER BY avg_rating;
 
+SELECT reviewers.first_name, reviewers.last_name, reviews.rating
+FROM `reviewers`
+INNER JOIN `reviews`
+    ON reviewers.id = reviews.reviewer_id;
+
+SELECT series.title AS unreviewed_series
+FROM `series`
+LEFT JOIN `reviews`
+    ON series.id = reviews.series_id
+WHERE reviews.rating IS NULL;
+
+SELECT series.genre, ROUND(AVG(reviews.rating), 2) AS avg_rating
+FROM `series`
+INNER JOIN `reviews`
+    ON series.id = reviews.series_id
+GROUP BY series.genre;
+
+SELECT reviewers.first_name, 
+    reviewers.last_name, 
+    COUNT(reviews.rating) AS COUNT,
+    IFNULL(MIN(reviews.rating), 0) AS MIN,
+    IFNULL(MAX(reviews.rating), 0) AS MAX,
+    IFNULL(AVG(reviews.rating), 0) AS AVG,
+    CASE
+        WHEN reviews.rating IS NOT NULL THEN 'ACTIVE'
+        ELSE 'INACTIVE'
+    END AS 'STATUS'
+FROM `reviewers`
+LEFT JOIN `reviews`
+    ON reviewers.id = reviews.reviewer_id
+GROUP BY reviewers.id;
+
+SELECT reviewers.first_name, 
+    reviewers.last_name, 
+    COUNT(reviews.rating) AS COUNT,
+    IFNULL(MIN(reviews.rating), 0) AS MIN,
+    IFNULL(MAX(reviews.rating), 0) AS MAX,
+    IFNULL(AVG(reviews.rating), 0) AS AVG,
+    IF(reviews.rating IS NOT NULL, 'ACTIVE', 'INACTIVE') AS 'STATUS'
+FROM `reviewers`
+LEFT JOIN `reviews`
+    ON reviewers.id = reviews.reviewer_id
+GROUP BY reviewers.id;
+
+SELECT s.title, r.rating, CONCAT(rs.first_name, ' ', rs.last_name) AS reviewer
+FROM `reviewers` AS rs
+INNER JOIN `reviews` AS r
+    ON rs.id = r.series_id
+INNER JOIN `series` AS s
+    ON s.id = r.reviewer_id;

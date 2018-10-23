@@ -213,6 +213,22 @@
     | Tue May 02 2017 00:00:00 GMT-0600 (Mountain Daylight Time) | 
     +------------------------------------------------------------+
 
+    -- # ROUND()
+    -- sounds to the nearest digit specified
+    -- ROUND(round this, how many digits)
+    SELECT series.genre, ROUND(AVG(reviews.rating), 2) AS avg_rating
+    FROM `series`
+    INNER JOIN `reviews`
+        ON series.id = reviews.series_id
+    GROUP BY series.genre;
+    +-----------+------------+
+    | genre     | avg_rating | 
+    +-----------+------------+
+    | Animation | 7.86       | 
+    | Comedy    | 8.16       | 
+    | Drama     | 8.04       | 
+    +-----------+------------+
+
 -- @ aggregate functions
 
     -- # COUNT()
@@ -303,6 +319,56 @@
     +-------------+----------------------+----------------+
 
     -- * example in group by section in adv_select.sql
+
+    -- * other ways of doing avg's
+    SELECT 
+        (SELECT Count(*) FROM photos) / (SELECT Count(*) FROM users) AS avg;
+    +------+
+    | avg  | 
+    +------+
+    | 2.57 | 
+    +------+
+
+    -- other examples
+    SELECT
+        (
+            COUNT(photos.id)/
+            COUNT(DISTINCT username)
+        ) AS 'AVERAGE NUMBER OF POST PER USER'
+    FROM users
+    LEFT JOIN photos
+        ON users.id = photos.user_id;
+    +---------------------------------+
+    | AVERAGE NUMBER OF POST PER USER | 
+    +---------------------------------+
+    | 2.57                            | 
+    +---------------------------------+
+
+    -- other
+    SELECT
+        (
+            COUNT(photos.id)/
+            COUNT(DISTINCT users.id)
+        ) AS 'AVERAGE NUMBER OF POST PER USER'
+    FROM users
+    LEFT JOIN photos
+        ON users.id = photos.user_id;
+    +---------------------------------+
+    | AVERAGE NUMBER OF POST PER USER | 
+    +---------------------------------+
+    | 2.57                            | 
+    +---------------------------------+
+
+    -- Average posts per user of those who post, I think
+    SELECT COUNT(DISTINCT user_id) AS 'Users that have post',  
+        COUNT(id) AS 'photo count', 
+        (COUNT(id) / COUNT(DISTINCT user_id)) AS 'avg post per user'
+    FROM `photos`;
+    +----------------------+-------------+-------------------+
+    | Users that have post | photo count | avg post per user | 
+    +----------------------+-------------+-------------------+
+    | 74                   | 257         | 3.473             | 
+    +----------------------+-------------+-------------------+
 
 -- @ date functions
 -- works with dates and datetimes

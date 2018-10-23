@@ -136,7 +136,12 @@
     | Raj        | 0       | 
     +------------+---------+
 
-
+    -- other example (average)
+    SELECT series.title, AVG(reviews.rating) AS avg_rating FROM `series`
+    INNER JOIN `reviews`
+        ON series.id = reviews.series_id
+    GROUP BY series.id
+    ORDER BY avg_rating;
 
     -- # LIMIT
     SELECT author_fname, author_lname, pages FROM `books` ORDER BY 3 LIMIT 2;
@@ -566,3 +571,35 @@
         | 4        | 2           | 12.5   | George Michael | 2           | 
         | 5        | 5           | 450.25 | Bette Davis    | 5           | 
         +----------+-------------+--------+----------------+-------------+
+
+        -- # double join
+        -- joining three tables together
+        -- also referencing tables as aliases
+        SELECT s.title, 
+            r.rating, 
+            CONCAT(rs.first_name, ' ', rs.last_name) AS reviewer
+        FROM reviewers AS rs
+        INNER JOIN reviews AS r
+            ON rs.id = r.series_id
+        INNER JOIN series AS s
+            ON s.id = r.reviewer_id;
+        +----------------------+--------+-----------------+
+        | title                | rating | reviewer        | 
+        +----------------------+--------+-----------------+
+        | Archer               | 8      | Thomas Stoneman | 
+        | Arrested Development | 7.5    | Thomas Stoneman | 
+        | Bobs Burgers         | 8.5    | Thomas Stoneman | 
+        | Bojack Horseman      | 7.7    | Thomas Stoneman | 
+        | Breaking Bad         | 8.9    | Thomas Stoneman | 
+        | Archer               | 8.1    | Wyatt Skaggs    | 
+        | Bojack Horseman      | 6      | Wyatt Skaggs    | 
+        | Bobs Burgers         | 8      | Wyatt Skaggs    | 
+        | Curb Your Enthusiasm | 8.4    | Wyatt Skaggs    | 
+        | Breaking Bad         | 9.9    | Wyatt Skaggs    | 
+        | Archer               | 7      | Kimbra Masters  | 
+        | Curb Your Enthusiasm | 7.5    | Kimbra Masters  | 
+        | Bojack Horseman      | 8      | Kimbra Masters  | 
+        | Bobs Burgers         | 7.1    | Kimbra Masters  | 
+        | Breaking Bad         | 8      | Kimbra Masters  | 
+        | Archer               | 7.5    | Domingo Cortes  | 
+        ...
