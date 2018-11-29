@@ -13,3 +13,13 @@
 // ? How to use react
 // Single page application
 // Multipage application as individual widgets
+
+// ? react projects, examples
+// C:\Users\RussellM\Desktop\projects\react_projects
+
+// ? events
+// https://reactjs.org/docs/events.html#supported-events
+
+// ? terminology
+// stateful component also called container
+// stateful components are necessary to utilize methods

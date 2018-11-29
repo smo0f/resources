@@ -8,6 +8,9 @@
 -- * VARCHAR
     -- a string typically between 1 and 255 characters
 
+-- storage requirements
+-- https://dev.mysql.com/doc/refman/8.0/en/storage-requirements.html#data-types-storage-reqs-strings
+
 -- # Numeric data types
     TINYINT
         -- whole numbers
@@ -35,8 +38,9 @@
         -- state abbreviations: CA, NY
         -- yes no questions: Y/N
         -- Sex: M/F
+        -- https://dev.mysql.com/doc/refman/8.0/en/char.html
     VARCHAR
-        -- 
+        -- https://dev.mysql.com/doc/refman/8.0/en/char.html 
     TINYTEXT
     TEXT
     BLOB

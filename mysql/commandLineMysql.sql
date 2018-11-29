@@ -132,4 +132,27 @@
 -- @ Alter 
     -- # Alter table, add index 
     ALTER TABLE table_name
-    ADD INDEX column_name (column_name);
+    ADD COLUMN column_name varchar(50) DEFAULT NULL,
+    -- first = first column position
+    ADD COLUMN column_name int(10) DEFAULT '0' first,
+    -- after = place after specified column name
+    ADD COLUMN column_name int(10) DEFAULT '0' after column_name,
+    ADD INDEX index_name(column_name);
+
+    -- indexing
+    -- adding an index can speed up the query significantly, takes up disk space for performance
+    -- ADD INDEX index_name(column_name1, column_name2)
+    -- speeds up query for column_name1, and  column_name1, column_name2, but not for column_name2 alone
+    -- https://www.udemy.com/mysql-and-sql-from-beginner-to-advanced/learn/v4/t/lecture/5056732?start=0
+
+    -- # CONSTRAINT
+    ALTER TABLE table_name
+    ADD CONSTRAINT constraint_name FOREIGN KEY(column_name) REFERENCES table_name(column_name);
+
+    -- # DROP CONSTRAINT
+    ALTER TABLE table_name
+    DROP CONSTRAINT constraint_name;
+
+    -- # DROP COLUMN
+    ALTER TABLE table_name
+    DROP COLUMN column_name;

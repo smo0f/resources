@@ -22,6 +22,9 @@
 <!-- VS Code database -->
 "ctrl + Shift + E" run selected text as a query
 
+<!-- Code Runner -->
+"ctrl + Alt + N" to output code
+
 <!-- key code - VS Code -->
 "alt + click" multiple cursors
 "alt + shift + click" multiple sections selected
