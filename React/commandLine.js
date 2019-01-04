@@ -16,6 +16,9 @@ npm start
 
 // # to deploy the application
 npm build
+npm run build
 
+// # from clone
+npm install // needs to install note before I can run it
 
 

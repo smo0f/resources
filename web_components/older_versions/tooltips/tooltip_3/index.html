@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Web Components</title>
+    <script src="tooltip.js"></script>
+    <style>
+        div {
+            border: 2px solid orange;
+        }
+    </style>
+</head>
+<body>
+    <template id="tooltip-template">
+        <slot>Defalt slot text</slot> <span> (?)</span>
+    </template>
+    <p><wrap-tooltip text="Web components are set the standards">Web Components</wrap-tooltip> are awesome!</p>
+    <p><wrap-tooltip>Here we go!!!</wrap-tooltip></p>
+    <p><wrap-tooltip></wrap-tooltip></p>
+    
+</body>
+</html>

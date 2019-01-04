@@ -307,3 +307,93 @@ HAVING count = (SELECT COUNT(*) FROM `photos`);
 | Mike.Auer39        | 257   | 
 | Nia_Haag           | 257   | 
 +--------------------+-------+
+
+-- # Views
+-- https://www.udemy.com/mysql-and-sql-from-beginner-to-advanced/learn/v4/t/lecture/5057026?start=0
+-- just wanted to add and view for practice purposes
+
+-- algorithm=undefined to algorithm=temptable
+-- algorithm=temptable, biuld and then drop, because it has something that cannot be in algorithm=merge, like concatenation or group by or other things like that
+-- https://www.udemy.com/mysql-and-sql-from-beginner-to-advanced/learn/v4/t/lecture/5057092?start=0
+CREATE VIEW potential_bots AS
+SELECT users.username, COUNT(likes.user_id) AS count
+FROM users
+INNER JOIN likes
+    ON likes.user_id = users.id
+GROUP BY likes.user_id
+HAVING count = (SELECT COUNT(*) FROM `photos`);
+
+SELECT * FROM potential_bots;
++--------------------+-------+
+| username           | count | 
++--------------------+-------+
+| Aniya_Hackett      | 257   | 
+| Jaclyn81           | 257   | 
+| Rocio33            | 257   | 
+| Maxwell.Halvorson  | 257   | 
+| Ollie_Ledner37     | 257   | 
+| Mckenna17          | 257   | 
+| Duane60            | 257   | 
+| Julien_Schmidt     | 257   | 
+| Mike.Auer39        | 257   | 
+| Nia_Haag           | 257   | 
+| Leslie67           | 257   | 
+| Janelle.Nikolaus81 | 257   | 
+| Bethany20          | 257   | 
++--------------------+-------+
+
+-- algorithm=merge
+CREATE VIEW Kenton_Kirlin_photos AS
+SELECT image_url, created_at 
+FROM `photos`
+WHERE user_id = 1;
+
+SELECT * FROM Kenton_Kirlin_photos;
++----------------------+------------------------------------------------------------+
+| image_url            | created_at                                                 | 
++----------------------+------------------------------------------------------------+
+| http://elijah.biz    | Wed Oct 17 2018 13:17:54 GMT-0600 (Mountain Daylight Time) | 
+| https://shanon.org   | Wed Oct 17 2018 13:17:54 GMT-0600 (Mountain Daylight Time) | 
+| http://vicky.biz     | Wed Oct 17 2018 13:17:54 GMT-0600 (Mountain Daylight Time) | 
+| http://oleta.net     | Wed Oct 17 2018 13:17:54 GMT-0600 (Mountain Daylight Time) | 
+| https://jennings.biz | Wed Oct 17 2018 13:17:54 GMT-0600 (Mountain Daylight Time) | 
++----------------------+------------------------------------------------------------+
+
+-- show tables, it also shows our view kenton_kirlin_photos, but not potential_bots because potential_bots is built on the fly and then deleted
+SHOW TABLES;
++----------------------+
+| Tables_in_ig_clone   | 
++----------------------+
+| comments             | 
+| follows              | 
+| kenton_kirlin_photos | 
+| likes                | 
+| photo_tags           | 
+| photos               | 
+| potential_bots       | 
+| tags                 | 
+| users                | 
++----------------------+
+
+-- show which tables views
+SHOW FULL TABLES;
++----------------------+------------+
+| Tables_in_ig_clone   | Table_type | 
++----------------------+------------+
+| comments             | BASE TABLE | 
+| follows              | BASE TABLE | 
+| kenton_kirlin_photos | VIEW       | 
+| likes                | BASE TABLE | 
+| photo_tags           | BASE TABLE | 
+| photos               | BASE TABLE | 
+| potential_bots       | VIEW       | 
+| tags                 | BASE TABLE | 
+| users                | BASE TABLE | 
++----------------------+------------+
+
+-- to drop view
+DROP VIEW kenton_kirlin_photos;
+
+-- VIEW
+-- can't add indexs to a view
+-- sometimes based on how the view is constructed, you cannot add records to view.

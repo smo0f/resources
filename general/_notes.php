@@ -3,7 +3,7 @@
 // * coding text syntax
     // * snake_case
     // * camelCase
-    // * TitleCasing
+    // * TitleCasing or StudleyCasing
 
 // * DRY
     // * Don't Repeat Yourself

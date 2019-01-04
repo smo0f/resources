@@ -158,3 +158,15 @@ console.log(f); // 4
 // {name} = {name: 'Max', age: 28};
 // console.log(name); // Max
 // console.log(age); // undefined
+
+// @ map
+// use code runner to see it work
+const numbers = [1,2,3,4];
+
+console.log(numbers);
+
+const doubleNumArray = numbers.map((num) => {
+   return num * 2; 
+})
+
+console.log(doubleNumArray);

@@ -41,3 +41,6 @@
         -- blog posts and tags
         -- students and classes
             -- they tipicly have a join table or union table, 3 tables to conect the data
+
+-- ? ACID (Atomicity, Consistency, Isolation, Durability)
+-- https://www.udemy.com/mysql-and-sql-from-beginner-to-advanced/learn/v4/t/lecture/5059262?start=18
