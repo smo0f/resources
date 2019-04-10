@@ -130,6 +130,9 @@
     -- unlocks all tables
     UNLOCK TABLES; 
 
+    -- read lock: users can read but not write to the row
+    -- write lock: users can read or write to the row
+
     -- # mysql variables
     -- variables stay in mysql
     -- set variable

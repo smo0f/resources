@@ -34,6 +34,8 @@
 "shift + alt + down"
 <!-- Move line up and down -->
 "Alt + Up" or "Alt + down"
+<!-- select duplicates -->
+"ctrl + d" on a selection
 <!-- Emmet -->
 ul>li*5.mainMenu.footer
 ul>li*5.mainMenu.footer.sddsfds>span*5.tag

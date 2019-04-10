@@ -41,12 +41,12 @@
         -- https://dev.mysql.com/doc/refman/8.0/en/char.html
     VARCHAR
         -- https://dev.mysql.com/doc/refman/8.0/en/char.html 
-    TINYTEXT
-    TEXT
+    TINYTEXT 256 bytes
+    TEXT 65,535 bytes ~64kb
     BLOB
-    MEDIUMTEXT
+    MEDIUMTEXT 16,777,215 bytes ~16MB
     MEDIUMBLOB
-    LONGTEXT
+    LONGTEXT 4,294,967,295 bytes ~4GB
     LONGBLOB
     ENUM
     SET

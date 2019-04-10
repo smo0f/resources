@@ -644,3 +644,38 @@ INNER JOIN `reviews` AS r
     ON rs.id = r.series_id
 INNER JOIN `series` AS s
     ON s.id = r.reviewer_id;
+
+
+
+SHOW TABLES;
+DESCRIBE comments;
+DESCRIBE follows;
+DESCRIBE likes;
+DESCRIBE photo_tags;
+DESCRIBE photos;
+
+ALTER TABLE grades
+    MODIFY date DATE NOT NULL DEFAULT "0001-01-01";
+
+    CREATE TABLE table_name (
+        id int(10) unsigned NOT NULL AUTO_INCREMENT,
+        column_name1 data_type,
+        PRIMARY KEY (id),
+        KEY column_name (column_name),
+        FOREIGN KEY(column_name) REFERENCES table_name(column_name) ON DELETE CASCADE
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+
+
+
+    CREATE TABLE table_name (
+        coupon_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+        corp_id int(10) unsigned NOT NULL DEFAULT '1',
+        coupon_amount decimal(5,2) NOT NULL DEFAULT 0.00,
+        coupon_code varchar(50) DEFAULT NULL,
+        cust_list text DEFAULT NULL,
+        limit_cust tinyint(1) unsigned NOT NULL DEFAULT '0',
+        PRIMARY KEY (id),
+        KEY corp_id (corp_id)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;

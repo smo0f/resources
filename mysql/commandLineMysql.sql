@@ -106,7 +106,7 @@
     
     CREATE TABLE orders(
         id INT AUTO_INCREMENT PRIMARY KEY,
-        order_date DATE,
+        order_date DATE DEFAULT "0001-01-01",
         amount DECIMAL(8,2),
         customer_id INT,
         FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE CASCADE
@@ -132,6 +132,7 @@
 -- @ Alter 
     -- # Alter table, add index 
     ALTER TABLE table_name
+    MODIFY last_name varchar(50) NULL,
     ADD COLUMN column_name varchar(50) DEFAULT NULL,
     -- first = first column position
     ADD COLUMN column_name int(10) DEFAULT '0' first,
