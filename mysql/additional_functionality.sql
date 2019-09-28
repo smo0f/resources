@@ -7,6 +7,18 @@
         changed_at TIMESTAMP DEFAULT NOW() ON UPDATE CURRENT_TIMESTAMP
     );
 
+    -- # ON DELETE CASCADE 
+    -- this refers to whenever a customer (primary key) is deleted the corresponding orders (foreign key constraint) will also be deleted.
+     CREATE TABLE orders(
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_date DATE DEFAULT "0001-01-01",
+        amount DECIMAL(8,2),
+        customer_id INT,
+        FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE CASCADE
+    );
+
+    
+
     -- # Views
     -- https://www.udemy.com/mysql-and-sql-from-beginner-to-advanced/learn/v4/t/lecture/5057026?start=0
     -- just wanted to add and view for practice purposes

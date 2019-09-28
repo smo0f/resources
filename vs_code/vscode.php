@@ -7,6 +7,7 @@
 //// crossed out text
 // TODO: something here
 // @ sections
+// # sections
 
 <!-- htmltagwrap -->
 "Alt + W" to wrap code in a tag
@@ -36,8 +37,8 @@
 "Alt + Up" or "Alt + down"
 <!-- select duplicates -->
 "ctrl + d" on a selection
+
 <!-- Emmet -->
 ul>li*5.mainMenu.footer
 ul>li*5.mainMenu.footer.sddsfds>span*5.tag
 table>tr.row1*5>td*8.box1
-

@@ -679,3 +679,8 @@ ALTER TABLE grades
         PRIMARY KEY (id),
         KEY corp_id (corp_id)
     ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+    SELECT * FROM `users`;
+
+    CREATE DATABASE db_name;
