@@ -7,8 +7,42 @@
         -- SQLite
         -- Oracle database
 
+-- ? Types of Databases
+    -- single-user database (desktop database) Only one user can use it at a time 
+    -- multiuser database, 2-50 users
+    -- Enterprise database, usually more than 50 users across many departments
+
+    -- Centralized database, a database that supports data located at a single site/location
+    -- Distributed database, A database that supports the distribution of data over several sites/locations
+
+    -- cloud database, AWS in the cloud, then distributed 
+
+    -- General-purpose databases, contain a wide variety of data used in multiple disciplines
+    -- Discipline specific databases contains data focused on specific subject areas, like academics or research purposes
+
+    -- Operational database aka, online transactional processing database (OLTP), Transactional database, production database, Records day-to-day activities
+
+    -- analytical database, focuses primarily on storing historical data and  business metrics used exclusively for tactical or strategic decision making. Such analysis  typically requires extensive “data massaging” (data manipulation) to produce information on which to base pricing decisions, sales forecasts, market strategies, and so on.  Analytical databases allow the end user to perform advanced analysis of business data  using sophisticated tools. 
+    -- (siting refrence) Coronel, Carlos. Database Systems: Design, Implementation, & Management (p. 10). Cengage Learning. Kindle Edition. 
+
+        -- Analyticall databases are often constructed with an analytical processing front and in a database warehouse
+    
+    -- Extensible markup language (XML) databases, Supports storage and management of semi structured XML data
+
+    -- ? other information
+    -- Online analytical processing (OLAP), Tools to help retrieve process and model data from a database warehouse falls under the discipline of business intelligence
+
+    -- Unstructured data, Original or raw state, does not lend itself to further processing
+    -- Structured data, Formatted data to allow processing more quickly and more easily
+    -- Semistructured data, has been processed to some extent
+    
 -- ? SQL 
     -- structured query language
+
+-- ? Acronyyms
+    -- database management system (DBMS)
+    -- structured query language (SQL)
+    -- Online analytical processing (OLAP)
 
 -- ? Primary Key 
     -- A unique identifier

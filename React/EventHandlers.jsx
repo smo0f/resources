@@ -67,7 +67,6 @@
             // Handler functions usually have the ending preference of handler
             switchNameHandler = () => {
                 console.log('Was click');
-                
             }
 
             render() {
@@ -138,13 +137,14 @@
             render() {
                 return (
                     <div>
+                        {/*Send name handler*/}
                         <Person 
                             name={this.state.persons[0].name} 
                             age={this.state.persons[0].age}
                             // pass method reference, and pass back info, 'Maximilian' gets passed as newName into the switchNameHandler Method
                             click={this.switchNameHandler.bind(this, 'Maximilian')} 
                         />
-                        {/*Send name handler*/}
+                        
                         <button onClick={this.switchNameHandler}>Switch Name</button>
                     </div>
                 )

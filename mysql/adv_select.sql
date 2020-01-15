@@ -603,3 +603,86 @@
         | Breaking Bad         | 8      | Kimbra Masters  | 
         | Archer               | 7.5    | Domingo Cortes  | 
         ...
+
+    -- # Union
+    -- Union, Removes duplicates, combines queries
+    -- less efficient because it removes duplicates
+    SELECT * FROM users WHERE id >= 5 AND id <= 22
+    UNION
+    SELECT * FROM users WHERE id >= 0 AND id <= 16 ORDER BY id DESC;
+    -- id	username	            created_at
+    -- 22	Kenneth64	            2016-12-27T16:48:17.000Z
+    -- 21	Rocio33	                2017-01-23T18:51:15.000Z
+    -- 20	Delpha.Kihn	            2016-08-31T08:42:30.000Z
+    -- 19	Hailee26	            2017-04-30T00:53:40.000Z
+    -- 18	Odessa2	                2016-10-22T00:16:56.000Z
+    -- 17	Norbert_Carroll35	    2017-02-07T05:05:43.000Z
+    -- 16	Annalise.McKenzie16	    2016-08-03T03:32:46.000Z
+    -- 15	Billy52	                2016-10-05T20:10:20.000Z
+    -- 14	Jaclyn81	            2017-02-07T06:29:16.000Z
+    -- 13	Alexandro35	            2017-03-29T23:09:02.000Z
+    -- 12	Dereck65	            2017-01-19T08:34:14.000Z
+    -- 11	Justina.Gaylord27	    2017-05-04T22:32:16.000Z
+    -- 10	Presley_McClure	        2016-08-07T22:25:49.000Z
+    -- 9	Gus93	                2016-06-25T01:36:31.000Z
+    -- 8	Tabitha_Schamberger11	2016-08-20T08:19:46.000Z
+    -- 7	Kasandra_Homenick	    2016-12-12T13:50:08.000Z
+    -- 6	Travon.Waters	        2017-04-30T19:26:14.000Z
+    -- 5	Aniya_Hackett	        2016-12-07T08:04:39.000Z
+    -- 4	Arely_Bogan63	        2016-08-13T07:28:43.000Z
+    -- 3	Harley_Lind18	        2017-02-21T18:12:33.000Z
+    -- 2	Andre_Purdy85	        2017-04-02T23:11:21.000Z
+    -- 1	Kenton_Kirlin	        2017-02-17T01:22:11.000Z
+
+    -- Full outer join with the union, ok example
+    -- https://www.udemy.com/course/mysql-and-sql-from-beginner-to-advanced/learn/lecture/5054228#overview
+    SELECT *
+    FROM users
+    LEFT JOIN photos
+        ON users.id = photos.user_id
+    UNION
+    SELECT *
+    FROM users
+    RIGHT JOIN photos
+        ON users.id = photos.user_id;
+
+    -- # Union All
+    -- Union All, dose not removes duplicates, combines queries
+    SELECT * FROM users WHERE id >= 5 AND id <= 22
+    UNION ALL
+    SELECT * FROM users WHERE id >= 0 AND id <= 16 ORDER BY id DESC;
+    -- id	username                created_at
+    -- 22   Kenneth64               2016-12-27T16:48:17.000Z
+    -- 21   Rocio33                 2017-01-23T18:51:15.000Z
+    -- 20   Delpha.Kihn             2016-08-31T08:42:30.000Z
+    -- 19   Hailee26                2017-04-30T00:53:40.000Z
+    -- 18   Odessa2                 2016-10-22T00:16:56.000Z
+    -- 17   Norbert_Carroll35       2017-02-07T05:05:43.000Z
+    -- 16   Annalise.McKenzie16     2016-08-03T03:32:46.000Z
+    -- 16   Annalise.McKenzie16     2016-08-03T03:32:46.000Z
+    -- 15   Billy52                 2016-10-05T20:10:20.000Z
+    -- 15   Billy52                 2016-10-05T20:10:20.000Z
+    -- 14   Jaclyn81                2017-02-07T06:29:16.000Z
+    -- 14   Jaclyn81                2017-02-07T06:29:16.000Z
+    -- 13   Alexandro35             2017-03-29T23:09:02.000Z
+    -- 13   Alexandro35             2017-03-29T23:09:02.000Z
+    -- 12   Dereck65                2017-01-19T08:34:14.000Z
+    -- 12   Dereck65                2017-01-19T08:34:14.000Z
+    -- 11   Justina.Gaylord27       2017-05-04T22:32:16.000Z
+    -- 11   Justina.Gaylord27       2017-05-04T22:32:16.000Z
+    -- 10   Presley_McClure         2016-08-07T22:25:49.000Z
+    -- 10   Presley_McClure         2016-08-07T22:25:49.000Z
+    -- 9    Gus93                   2016-06-25T01:36:31.000Z
+    -- 9    Gus93                   2016-06-25T01:36:31.000Z
+    -- 8    Tabitha_Schamberger11   2016-08-20T08:19:46.000Z
+    -- 8    Tabitha_Schamberger11   2016-08-20T08:19:46.000Z
+    -- 7    Kasandra_Homenick       2016-12-12T13:50:08.000Z
+    -- 7    Kasandra_Homenick       2016-12-12T13:50:08.000Z
+    -- 6    Travon.Waters           2017-04-30T19:26:14.000Z
+    -- 6    Travon.Waters           2017-04-30T19:26:14.000Z
+    -- 5    Aniya_Hackett           2016-12-07T08:04:39.000Z
+    -- 5    Aniya_Hackett           2016-12-07T08:04:39.000Z
+    -- 4    Arely_Bogan63           2016-08-13T07:28:43.000Z
+    -- 3    Harley_Lind18           2017-02-21T18:12:33.000Z
+    -- 2    Andre_Purdy85           2017-04-02T23:11:21.000Z
+    -- 1    Kenton_Kirlin           2017-02-17T01:22:11.000Z

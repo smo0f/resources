@@ -37,7 +37,11 @@
         // ? lesson 35 Working with Props, https://www.udemy.com/react-the-complete-guide-incl-redux/learn/lecture/8090870#overview
 
     // # props children
-        // <Person name="Russell (props.name)">Some text (props.children) </Person>
+        /* 
+            <Person name="Russell (props.name)">
+                Some text (props.children) 
+            </Person>
+        */
 
         import React from 'react'
             

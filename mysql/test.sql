@@ -684,3 +684,6 @@ ALTER TABLE grades
     SELECT * FROM `users`;
 
     CREATE DATABASE db_name;
+
+    SHOW CREATE TABLE posts;
+    SHOW COLUMNS FROM `posts`;
