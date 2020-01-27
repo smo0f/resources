@@ -51,13 +51,20 @@
         -- Sex: M/F
         -- CHAR(0-255) min-max 
         -- https://dev.mysql.com/doc/refman/8.0/en/char.html
+        -- Performance https://dba.stackexchange.com/questions/2640/what-is-the-performance-impact-of-using-char-vs-varchar-on-a-fixed-size-field
     VARCHAR
         -- VARCHAR(255) Variable length, Adds an extra bite or two depending on the count of characters
         -- The effective maximum length of a VARCHAR is subject to the maximum row size (65,535 bytes, which is shared among all columns) and the character set used
         -- In contrast to CHAR, VARCHAR values are stored as a 1-byte or 2-byte length prefix plus data. The length prefix indicates the number of bytes in the value. A column uses one length byte if values require no more than 255 bytes, two length bytes if values may require more than 255 bytes.
         -- good table on the link below***
         -- VARCHAR(0-65535) min-max 
-        -- https://dev.mysql.com/doc/refman/8.0/en/char.html 
+        -- VARCHAR(13) + 1 byte
+        -- VARCHAR(255) + 2 byte
+        -- Microsoft SQL
+            -- VARCHAR(13) + 2 byte
+            -- VARCHAR(255) + 2 byte
+        -- https://dev.mysql.com/doc/refman/8.0/en/char.html
+        -- Performance https://dba.stackexchange.com/questions/2640/what-is-the-performance-impact-of-using-char-vs-varchar-on-a-fixed-size-field 
     BINARY
     VARBINARY
     TINYBLOB

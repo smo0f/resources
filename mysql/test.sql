@@ -687,3 +687,58 @@ ALTER TABLE grades
 
     SHOW CREATE TABLE posts;
     SHOW COLUMNS FROM `posts`;
+
+
+    -- SQL for class
+    SELECT * 
+    FROM stockData;
+    
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume 
+    FROM stockData;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+    FROM stockData
+        WHERE TradeDate >= '1/1/2018' 
+            AND TradeDate < '1/1/2019';
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol = 'AAPL' 
+            AND YEAR(TradeDate) = 2019;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018
+    ORDER BY ST_Open;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018
+    ORDER BY ST_Open DESC;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018
+    ORDER BY ST_Open DESC, ST_Close;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE Volume IS NULL;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE Volume IS NOT NULL;

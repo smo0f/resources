@@ -604,8 +604,8 @@
         | Archer               | 7.5    | Domingo Cortes  | 
         ...
 
-    -- # Union
-    -- Union, Removes duplicates, combines queries
+    -- # UNION
+    -- UNION, Removes duplicates, combines queries
     -- less efficient because it removes duplicates
     SELECT * FROM users WHERE id >= 5 AND id <= 22
     UNION
@@ -634,19 +634,22 @@
     -- 2	Andre_Purdy85	        2017-04-02T23:11:21.000Z
     -- 1	Kenton_Kirlin	        2017-02-17T01:22:11.000Z
 
-    -- Full outer join with the union, ok example
+    -- SQL injection using the union
     -- https://www.udemy.com/course/mysql-and-sql-from-beginner-to-advanced/learn/lecture/5054228#overview
-    SELECT *
-    FROM users
-    LEFT JOIN photos
-        ON users.id = photos.user_id
-    UNION
-    SELECT *
-    FROM users
-    RIGHT JOIN photos
-        ON users.id = photos.user_id;
+    SELECT title, authorName, imageName, createdDate FROM posts 
+    UNION (SELECT 1,2,3,4 FROM dual);
 
-    -- # Union All
+    SELECT title, authorName, imageName, createdDate FROM posts WHERE title Like '%ani%'
+    UNION (SELECT TABLE_NAME, TABLE_SCHEMA, 3, 4 FROM information_schema.tables);
+
+    SELECT title, authorName, imageName, createdDate FROM posts WHERE title Like '%ani%'
+    UNION (SELECT username, emailAddress, phoneNumber, 'password' FROM users);
+
+    -- works in phpMyadmin
+    SELECT title, authorName, imageName, createdDate FROM posts WHERE title Like '%ani%'
+    UNION (SELECT username, emailAddress, phoneNumber, hashPass FROM users);
+
+    -- # UNION ALL
     -- Union All, dose not removes duplicates, combines queries
     SELECT * FROM users WHERE id >= 5 AND id <= 22
     UNION ALL
@@ -686,3 +689,17 @@
     -- 3    Harley_Lind18           2017-02-21T18:12:33.000Z
     -- 2    Andre_Purdy85           2017-04-02T23:11:21.000Z
     -- 1    Kenton_Kirlin           2017-02-17T01:22:11.000Z
+
+    -- # PROJECT
+    -- TODO: how to do???
+    PROJECT username FROM users;
+
+    -- INTERSECT
+    -- TODO: how to do???
+    SELECT id FROM users WHERE id >= 5 AND id <= 22
+    INTERSECT
+    SELECT id FROM users WHERE id >= 0 AND id <= 16;
+
+    -- TODO: how to do???
+    DIFFERENCE
+    
