@@ -142,9 +142,64 @@ GROUP BY LEN(CompanyName) ORDER BY LEN(CompanyName);
 
 
 
+-- SQL for class
+    SELECT * 
+    FROM stockData;
+    
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume 
+    FROM stockData;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+    FROM stockData
+        WHERE TradeDate >= '1/1/2018' 
+            AND TradeDate < '1/1/2019';
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol = 'AAPL' 
+            AND YEAR(TradeDate) = 2019;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018
+    ORDER BY ST_Open;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018
+    ORDER BY ST_Open DESC;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE TickerSymbol NOT LIKE 'a%' 
+            AND YEAR(TradeDate) = 2018
+    ORDER BY ST_Open DESC, ST_Close;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE Volume IS NULL;
+
+    SELECT TickerSymbol, ST_Open, ST_Close, Volume, TradeDate 
+        FROM stockData
+        WHERE Volume IS NOT NULL;
+
+
+
 
 -- @ Asignment 2
--- TODO: all pics
 -- 1. List all columns and all rows from the StockData table.
 SELECT * 
     FROM StockData;
@@ -180,7 +235,6 @@ SELECT PriceID, ST_Open, ST_Close
 ORDER BY ST_Open, ST_Close;
 
 
--- TODO: check with others
 -- 7. List the price ID, stock high and stock low of all stocks that have a stock high above 130. Also list the same information for all stocks that have a stock low below 5.  List the high and low stocks by ascending order.
 SELECT PriceID, ST_High, ST_Low
     FROM StockData
@@ -191,7 +245,7 @@ ORDER BY ST_High, ST_Low;
 -- 8. List all rows where any of the stock prices are zero.
 SELECT *
     FROM StockData
-    WHERE ST_Close = 0 OR ST_Open = 0 OR ST_High = 0 OR ST_Low = 0;
+    WHERE ST_Open = 0 OR ST_High = 0 OR ST_Low = 0 OR ST_Close = 0;
 
 
 -- 9. Look for missing data by listing any rows in StockData that contain nulls.
@@ -204,7 +258,8 @@ SELECT *
         OR ST_High IS NULL 
         OR ST_Low IS NULL 
         OR ST_Close IS NULL 
-        OR Volume IS NULL;
+        OR Volume IS NULL
+        OR PriceID IS NULL;
 
 
 -- 10. List all rows where the high stock price for the day is not at least as high as the low for that day. There should not be any rows where this is the case.
@@ -282,12 +337,12 @@ ORDER BY ST_High DESC;
 
 
 -- 18. List the trading start date (first date) in StockData table.
-SELECT MIN(TradeDate) AS 'Start Date'
+SELECT MIN(TradeDate) AS StartDate
     FROM StockData;
 
 
 -- 19. List the trading start date and end date for each ticker in StockData.
-SELECT TickerSymbol, MIN(TradeDate) AS 'Start Date', MAX(TradeDate) AS 'End Date'
+SELECT TickerSymbol, MIN(TradeDate) AS StartDate, MAX(TradeDate) AS EndDate
     FROM StockData
 GROUP BY TickerSymbol;
 
@@ -305,10 +360,16 @@ SELECT MIN(TradeDate) AS EarliestTradeDateWithHighOver100
 
 
 -- 22. List each ticker symbol and the average daily trade volume for that stock. Order the list from highest to least daily trade volume.
-SELECT TickerSymbol, AVG(CONVERT(bigint, Volume)) AS 'Average Daily'
+SELECT TickerSymbol, AVG(Volume) AS AvgVolume
     FROM StockData
 GROUP BY TickerSymbol
-ORDER BY 'Average Daily' DESC;
+ORDER BY AvgVolume DESC;
+
+    -- Need to work on mine
+    SELECT TickerSymbol, AVG(CONVERT(bigint, Volume)) AS AvgVolume
+        FROM StockData
+    GROUP BY TickerSymbol
+    ORDER BY AvgVolume DESC;
 
 
 -- 23. List the highest high price of all the stocks that have been traded in 2018 and have a low price less than 100 dollars.
@@ -318,7 +379,7 @@ SELECT MAX(ST_High)
 
 
 -- 24. List the number of trade dates of stocks that were traded in the month of August in 2018.
-SELECT COUNT(TradeDate) AS 'August 2018 TradeDate Count'
+SELECT COUNT(TradeDate) AS August2018TradeDateCount
     FROM StockData
     WHERE TradeDate BETWEEN 'August 1, 2018' AND 'August 31, 2018';
 
@@ -329,10 +390,9 @@ SELECT COUNT(ST_Open) AS NumberOfOpeningPricesOf70In2018
     WHERE ST_Open = 70 AND YEAR(TradeDate) = 2018;
 
 
--- TODO: check with others
 -- ? https://www.w3resource.com/sql/aggregate-functions/count-with-distinct.php
 -- 26. List the industry and the number of different companies in each industry.
-SELECT Industry, COUNT(DISTINCT TickerSymbol) AS 'Number of Companies'
+SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
     FROM StockData
 GROUP BY Industry;
 
@@ -361,10 +421,10 @@ GROUP BY Industry;
 
 -- 27. List the industry and the number of different companies in each industry. Put the answer in order of most stocks to least stocks.
 -- teachers Answer
-SELECT Industry, COUNT(DISTINCT TickerSymbol) AS 'Number of stocks'
+SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfStocks
     FROM StockData
 GROUP BY Industry
-ORDER BY 'Number of stocks' DESC;
+ORDER BY NumberOfStocks DESC;
 
     -- my answer
     SELECT Industry, COUNT(DISTINCT TickerSymbol) AS 'Number of Companies', SUM(CONVERT(bigint, Volume)) AS 'Number of Stocks'
@@ -376,14 +436,14 @@ ORDER BY 'Number of stocks' DESC;
 
 
 -- 28. List the ten most common closing prices along with the number of times each occurs.
-SELECT TOP 10 ST_Close, COUNT(ST_Close) AS 'Number of Occurrences'
+SELECT TOP 10 ST_Close, COUNT(ST_Close) AS NumberOfOccurrences
     FROM StockData
 GROUP BY ST_Close
-ORDER BY 'Number of Occurrences' DESC;
+ORDER BY NumberOfOccurrences DESC;
 
 
 -- 29. List the largest single-day stock price increase for Ford (between the market opening and closing).
-SELECT MAX(ST_Open - ST_Close) AS 'Greatest Increase Amount'
+SELECT MAX(ST_Open - ST_Close) AS GreatestIncreaseAmount
     FROM StockData
     WHERE TickerSymbol = 'F';
     
@@ -420,20 +480,20 @@ SELECT MAX(ST_Open - ST_Close) AS 'Greatest Increase Amount'
 
 
 -- 30. List the lowest opening price for Ford stock in 2015.
-SELECT MIN(ST_Open) AS 'Lowest Opening Price For Ford in 2015'
+SELECT MIN(ST_Open) AS LowestOpeningPriceForFordIn2015
     FROM StockData
     WHERE TickerSymbol = 'F' AND YEAR(TradeDate) = 2015;
 
 
 -- 31. List the highest closing price for Ford in 2018.
-SELECT MAX(ST_Close) AS 'Highest Closing Price For Ford in 2018'
+SELECT MAX(ST_Close) AS HighestClosingPriceForFordIn2018
     FROM StockData
     WHERE TickerSymbol = 'F' AND YEAR(TradeDate) = 2018;
 
 
 -- ? https://www.w3resource.com/sql/aggregate-functions/count-with-distinct.php
 -- 32. List the number of days in the table when a trade occurred (when the trade volume for any stock wasn’t zero).
-SELECT COUNT(DISTINCT TradeDate) AS "Days Trade Occurred" 
+SELECT COUNT(DISTINCT TradeDate) AS DaysTradeOccurred 
     FROM StockData
     WHERE Volume <> 0;
 
@@ -462,7 +522,7 @@ SELECT COUNT(DISTINCT TradeDate) AS "Days Trade Occurred"
 
 
 -- 33. List the number of days in the table when a trade occurred (when the trade volume for any stock wasn’t zero) for each ticker symbol.
-SELECT TickerSymbol, COUNT(DISTINCT TradeDate ) AS "Days Trade Occurred" 
+SELECT TickerSymbol, COUNT(DISTINCT TradeDate) AS DaysTradeOccurred 
     FROM StockData
     WHERE Volume <> 0
 GROUP BY TickerSymbol;
@@ -474,6 +534,13 @@ SELECT TOP 10 TickerSymbol, DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS Lon
 GROUP BY TickerSymbol
 ORDER BY LongestTradingHistoryInDays DESC;
 
+    -- ! teacher, different answer
+    SELECT TOP 10 TickerSymbol, COUNT(DISTINCT TradeDate) AS DaysWithTrade
+        FROM StockData
+        WHERE Volume > 0
+    GROUP BY TickerSymbol
+    ORDER BY DaysWithTrade DESC, TickerSymbol;
+
     -- Cali's Team, needs DESC
     SELECT TOP 10 TickerSymbol
         FROM StockData
@@ -481,9 +548,8 @@ ORDER BY LongestTradingHistoryInDays DESC;
     ORDER BY MAX(TradeDate)-MIN(TradeDate);
 
 
--- TODO: check with others
 -- 35. List the industries in alphabetical order and the number of companies in each industry in the table.
-SELECT Industry, COUNT(DISTINCT TickerSymbol) AS 'Number of Companies'
+SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
     FROM StockData
 GROUP BY Industry
 ORDER BY Industry;
@@ -496,58 +562,71 @@ ORDER BY Industry;
 
 
 -- 36. Suppose we have a theory that stocks dropped in value after September 11, 2001. List the minimum closing price of Ford stock in September 2001 before September 11.
-SELECT MIN(ST_Close) AS 'Minimum Closing Price, Before September 11'
+SELECT MIN(ST_Close) AS MinimumClosingPriceBeforeSeptember11
     FROM StockData
     WHERE TickerSymbol = 'F' AND TradeDate BETWEEN 'September 1, 2001' AND 'September 10, 2001';
     -- 18.7600000000000
 
 
 -- 37. Now list the minimum closing price of Ford stock in September 2001 after September 11.
-SELECT MIN(ST_Close) AS 'Minimum Closing Price, After September 11'
+SELECT MIN(ST_Close) AS MinimumClosingPriceAfterSeptember11
     FROM StockData
     WHERE TickerSymbol = 'F' AND TradeDate BETWEEN 'September 12, 2001' AND 'September 30, 2001';
     -- 15.3400000000000
 
+
 -- 38. List the all the ticker symbols containing the letter S and their average closing price in 2018.
-SELECT TickerSymbol, AVG(ST_Close) AS 'Average Closing Price In 2018' 
+SELECT TickerSymbol, AVG(ST_Close) AS AverageClosingPriceIn2018 
     FROM StockData
     WHERE TickerSymbol LIKE '%S%' AND YEAR(TradeDate) = 2018
 GROUP BY TickerSymbol;
 
--- ! start here *********************************************************88
+
 -- 39. List the ticker symbols and the average price multiplied by volume for each ticker symbol in 2018. Use the closing price of as the price for the entire day. List the ticker symbol with the highest average price times volume first.
-SELECT TickerSymbol, (AVG(ST_Close) * SUM(CONVERT(bigint, Volume))) AS 'Average Closing Price Multiplied By Volume, In 2018' 
+SELECT TickerSymbol, (AVG(ST_Close) * SUM(Volume)) AS AverageClosingPrice 
     FROM StockData
     WHERE YEAR(TradeDate) = 2018
 GROUP BY TickerSymbol
-ORDER BY 'Average Closing Price Multiplied By Volume, In 2018' DESC;
+ORDER BY AverageClosingPrice DESC;
+
+    -- Need for Mine to work
+    SELECT TickerSymbol, (AVG(ST_Close) * SUM(CONVERT(bigint, Volume))) AS AverageClosingPrice 
+        FROM StockData
+        WHERE YEAR(TradeDate) = 2018
+    GROUP BY TickerSymbol
+    ORDER BY AverageClosingPrice DESC;
+
 
 -- 40. List the number of times you could have made at least a 10% profit by purchasing stocks at its lowest price for the day and selling the stock at its highest price for the day.
-SELECT COUNT(*) AS 'Times You Could Have Made At Least A 10% Profit'
+SELECT COUNT(*) AS NumberOfTimes
     FROM StockData
-    WHERE ((ST_High - ST_Low) / ST_High) >= .1;
+    WHERE ST_High >= (ST_Low * 1.1);
 
 
 -- 41. List the relevant ticker symbols and the number of times you could have made at least a 10% profit on that stock by purchasing the stock at its lowest price for the day and selling the stock at its highest price for the day. List the ticker symbol for which this occurs most frequently first.
-SELECT TickerSymbol, COUNT(*) AS 'Times You Could Have Made At Least A 10% Profit'
+-- Teacher
+SELECT TickerSymbol, COUNT(*) AS NumberOfTimes
+    FROM StockData
+    WHERE ST_High >= (ST_Low * 1.1)
+GROUP BY TickerSymbol
+ORDER BY COUNT(*) DESC;
+
+    -- Mine
+    SELECT TickerSymbol, COUNT(*) AS 'Times You Could Have Made At Least A 10% Profit'
+        FROM StockData
+        WHERE ((ST_High - ST_Low) / ST_Low) >= .1
+    GROUP BY TickerSymbol
+    ORDER BY COUNT(*) DESC;
+
+
+-- 42. List the relevant ticker symbols and the number of times you could have had at least a 10% loss on that stock by purchasing the stock at its highest price for the day and selling the stock at its lowest price for the day. List the ticker symbol for which this occurs most frequently first.
+--  Teacher 
+SELECT TickerSymbol, COUNT(*) AS NumberOfTimes
     FROM StockData
     WHERE ((ST_High - ST_Low) / ST_High) >= .1
 GROUP BY TickerSymbol
 ORDER BY COUNT(*) DESC;
 
-    -- Teacher
-    SELECT TickerSymbol, COUNT(*) AS NumberOfTimes
-        FROM StockData
-        WHERE ST_High >= (ST_Low * 1.1)
-    GROUP BY TickerSymbol
-    ORDER BY COUNT(*) DESC;
-
--- 42. List the relevant ticker symbols and the number of times you could have had at least a 10% loss on that stock by purchasing the stock at its highest price for the day and selling the stock at its lowest price for the day. List the ticker symbol for which this occurs most frequently first.
-SELECT TickerSymbol, COUNT(*) AS 'Times You Could Have Lost At Least 10% Profit'
-    FROM StockData
-    WHERE ((ST_Low - ST_High) / ST_High) >= -0.1
-GROUP BY TickerSymbol
-ORDER BY COUNT(*) DESC;
 
 -- ? https://www.sqlservertutorial.net/sql-server-basics/sql-server-create-table/
 -- 43. Create a Toys table (ToyID, ToyName) and a Colors Table (ColorID, ColorName) and put six tuples(rows) in each table. Use CREATE statements to make the tables.  
@@ -567,18 +646,21 @@ CREATE TABLE Colors (
 INSERT INTO Colors 
     VALUES ('Red'),('Yellow'),('Blue'),('Purple'),('Green'),('Gray');
 
+
 -- 44. Add a new row to the Stock Data table.  This stock should have the Microsoft ticker symbol (MSFT) in the Tech Industry.  The stock was traded on May 5, 2017.  It had an opening price of 68.90, a high price of 69.03, a low price of 68.48, a closing price of 69, and a volume of 19,128,782.
-INSERT INTO StockData (TickerSymbol, Industry, TradeDate, ST_Open, ST_High, ST_Low, ST_Close, Volume)
+-- Teachers Answer
+INSERT INTO StockData 
     VALUES ('MSFT', 'Tech', 'May 5, 2017', 68.90, 69.03, 68.48, 69, 19128782);
 
-    -- Teachers Answer
-    INSERT INTO StockData 
+    -- Mine
+    INSERT INTO StockData (TickerSymbol, Industry, TradeDate, ST_Open, ST_High, ST_Low, ST_Close, Volume)
         VALUES ('MSFT', 'Tech', 'May 5, 2017', 68.90, 69.03, 68.48, 69, 19128782);
 
 
 -- 45. It’s January 30, 2017 and you need to add information to the Stock Data table for Microsoft on that date.  You have to wait until the end of the day before you can put any of the prices because you don't know the closing price yet.  For now just add Microsoft's trade date, Industry, and ticker symbol to the table.
 INSERT INTO StockData (TickerSymbol, Industry, TradeDate)
-    VALUES ('MSFT', 'Tech', '1/30/2017');
+    VALUES ('MSFT', 'Tech', '1-30-2017');
+
 
 -- 46. Remove all the rows of stocks that were traded before January 1st, 2001 for Microsoft.
 DELETE 
@@ -590,23 +672,31 @@ FROM StockData
     FROM StockData
         WHERE TradeDate < '1/1/2001' AND TickerSymbol = 'MSFT';
 
+
 -- 47. Remove all the rows of stocks of Microsoft that were traded during the month of October in the year 2018.
 DELETE FROM StockData
     WHERE TickerSymbol = 'MSFT' AND YEAR(TradeDate) = 2018 AND MONTH(TradeDate) = 10;
 
--- 48 (check)
+    -- Cali Team
+    DELETE FROM StockData
+	    WHERE TickerSymbol = 'MSFT' AND TradeDate BETWEEN '10-1-2018' AND '10-31-2018';
+
+
+-- 48 Make a change for the Microsoft row for April 1st, 2018.  Change the opening stock price to 55.1, the high price to 56.26, the low price to 55.55, and the closing stock price to 55.95, and the volume to 24,298,620.
 UPDATE StockData
 SET ST_Open = 55.1,
     ST_High = 56.26,
     ST_Low = 55.55,
     ST_Close = 55.95,
     Volume = 24298620
-    WHERE TradeDate = '4//1/2018' AND TickerSymbol = 'MSFT';
+    WHERE TradeDate = '4-1-2018' AND TickerSymbol = 'MSFT';
+
 
 -- 49. Set any opening stock prices that are zero to null.
 UPDATE StockData
 SET ST_Open = NULL
     WHERE ST_Open = 0;
+
 
 -- 50. Any suggestions for this assignment?
 -- Nope
@@ -645,3 +735,393 @@ FROM WTI JOIN SpotPrices AS sp ON
 SELECT MAX(BCSpotPrice) AS BrentCrude, MAX(WTISpotPrice) AS WTI
     FROM SpotPrices;
 -- 11.
+
+
+
+-- JOINS
+-- 5 types
+    -- inner join/ join
+    -- left join
+    -- right join
+    -- full join
+    -- cross join
+
+
+-- @ Asignment 3
+-- 1. List the price ID and the high stock price of the stocks with the high stock price is less than $100. Order the list by the highest to least daily high stock price.
+SELECT PriceID, ST_High
+    FROM StockData
+    WHERE ST_High < 100
+ORDER BY ST_High DESC;
+
+-- 2. List the price ID and the high stock price of the two stocks with the most expensive high prices that are still less than $ 100.
+SELECT TOP 2 PriceID, ST_High
+    FROM StockData
+    WHERE ST_High < 100
+ORDER BY ST_High DESC;
+
+-- 3. List the records on which you could have made at least a 10% profit by purchasing stocks at its lowest price for the day and selling the stock at its highest price for the day.
+SELECT *
+    FROM StockData
+    WHERE ST_High >= (ST_Low * 1.1);
+
+-- 4. List the ten largest differences (from greatest to least) between a daily high and low stock price along with the accompanying TickerSymbol, Industry, and TradeDate.
+SELECT TOP 10 TickerSymbol, Industry, TradeDate, (ST_High - ST_Low) AS GreatestDifference
+    FROM StockData
+ORDER BY GreatestDifference DESC;
+
+-- 5. List the five rows with the highest price multiplied by volume. Use the closing price of as the price for the entire day.
+SELECT TOP 5 *, (ST_Close * Volume) AS HighestPrice
+    FROM StockData
+ORDER BY HighestPrice DESC;
+
+-- 6. List the five rows with the highest ratio of daily high stock price to daily low stock price.
+SELECT TOP 5 *, (ST_High / ST_Low) AS GreatestRatio
+    FROM StockData
+ORDER BY GreatestRatio DESC;
+
+-- ! check
+-- 7. List the total selling price of the shares above if you sold them at the daily high price on the same day.
+SELECT TOP 5 *, (ST_High / ST_Low) AS GreatestRatio, (ST_High - ST_Low) AS totalSellingPrice
+    FROM StockData
+ORDER BY GreatestRatio DESC;
+
+-- 8. List the Price IDs and stock highs over 130 dollars rounded to the nearest penny.
+SELECT PriceID, CAST(ROUND(ST_High, 2) AS NUMERIC(10,2)) AS 'ST_High'
+    FROM StockData
+    WHERE ST_High > 130
+ORDER BY ROUND(ST_High, 2) DESC;
+
+    -- Similar answer
+    SELECT PriceID, ROUND(ST_High, 2) AS 'ST_High'
+        FROM StockData
+        WHERE ST_High > 130
+    ORDER BY ROUND(ST_High, 2) DESC;
+
+-- 9. Please list the first three characters of the TickerSymbol attribute for the CompanyInformation table.
+SELECT LEFT(TickerSymbol, 3) AS FirstThreeCharactersOFTickerSymbol
+    FROM CompanyInformation;
+
+-- 10. What is today’s date?
+SELECT GETDATE();
+
+-- 11. How many minutes difference is there between the oldest and youngest members of your group?
+SELECT DATEDIFF(minute, '10/27/1987', '10/27/2000');
+
+
+-- 12. How much older is Rasputin (‘1/01/1869’) than Tommy Lee, '10/03/1962') in seconds? 
+SELECT DATEDIFF(second, '1/01/1869', '10/03/1962');
+-- ! The datediff function resulted in an overflow. The number of dateparts separating two date/time instances is too large. Try to use datediff with a less precise datepart.
+
+-- ? https://docs.microsoft.com/en-us/sql/t-sql/functions/datename-transact-sql?view=sql-server-ver15
+-- 13. List every date that falls on a Friday from the Calendar table regardless of whether there are matching rows from the Stock Data table.
+SELECT TickerSymbol, ActualDate, TradeDate
+    FROM Calendar
+    LEFT JOIN StockData
+        ON (ActualDate = TradeDate)
+    WHERE DATENAME(weekday, ActualDate) = 'Friday';
+
+
+-- 14. On October 9, 2012, you think the stock market is healthy and you decide to purchase your 200 shares of each stock back. How much will this cost?
+SELECT CONCAT('$', SUM(ST_Close) * 200) AS CostToBuyBack
+    FROM StockData
+    WHERE TradeDate = 'October 9, 2012';
+
+    -- testing
+    SELECT TickerSymbol, ST_Close
+        FROM StockData
+        WHERE TradeDate = 'October 9, 2012'
+    ORDER BY TickerSymbol;
+
+-- 15. List each ticker symbol and the average daily trade volume for that stock on Fridays. Order the list from highest to least daily trade volume.
+SELECT TickerSymbol, AVG(CONVERT(bigint, Volume)) AS AverageFridayTradeVolume
+    FROM StockData
+    WHERE DATENAME(weekday, TradeDate) = 'Friday'
+GROUP BY TickerSymbol
+ORDER BY AverageFridayTradeVolume DESC;
+
+-- 16. List each ticker symbol, day of the week, and the average daily trade volume for that stock on each day of the week. Order the list by ticker symbol and then by highest to least daily trade volume.
+SELECT TickerSymbol, DATENAME(weekday, TradeDate) AS DayOFTheWeek, AVG(CONVERT(bigint, Volume)) AS AverageDailyTradeVolume
+    FROM StockData
+GROUP BY TickerSymbol, DATENAME(weekday, TradeDate)
+ORDER BY TickerSymbol, AverageDailyTradeVolume DESC;
+
+-- 17. List the months of the year and their corresponding average closing prices of Ford stock. List the months with the lowest average closing prices first.
+SELECT DATENAME(month, TradeDate) AS AggregatedMonths, AVG(ST_Close) AS AverageClosingPrices
+    FROM StockData
+    WHERE TickerSymbol = 'F'
+GROUP BY DATENAME(month, TradeDate)
+ORDER BY AverageClosingPrices;
+
+-- 18. List the number of trade days in each month of 2018. Sort the list from least to greatest number of trade days.
+SELECT DATENAME(month, TradeDate) AS AggregatedMonths, COUNT(TradeDate) AS TradeDayPerMonth
+    FROM StockData
+    WHERE YEAR(TradeDate) = 2018 AND Volume > 0
+GROUP BY DATENAME(month, TradeDate)
+ORDER BY TradeDayPerMonth;
+
+-- 19. List the number of trade days in each month of 2018. Also include the average trade volume for each month. Sort the list from least to greatest number of trade days.
+SELECT DATENAME(month, TradeDate) AS AggregatedMonths, COUNT(TradeDate) AS TradeDayPerMonth, AVG(CONVERT(bigint, Volume)) AS AverageTradeVolume
+    FROM StockData
+    WHERE YEAR(TradeDate) = 2018 AND Volume > 0
+GROUP BY DATENAME(month, TradeDate)
+ORDER BY TradeDayPerMonth;
+
+-- ! check
+-- 20. List the industries in alphabetical order and the number of companies in each industry in the table. Also include the ratio of unique dates to the range of dates for each industry.
+SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies, COUNT(DISTINCT TradeDate) * 1.0 / DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RatioOfUniqueDates
+    FROM StockData
+GROUP BY Industry
+ORDER BY Industry;
+
+-- 21. List the industries in alphabetical order and the number of companies in each industry in the table. Also include the range of dates and the number of unique dates for each industry.
+SELECT Industry, 
+    COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies, 
+    COUNT(DISTINCT TradeDate) AS UniqueDates, 
+    DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+    MIN(TradeDate) AS RangeOfDates_MinDate
+    MAX(TradeDate) AS RangeOfDates_MaxDate
+    FROM StockData
+GROUP BY Industry
+ORDER BY Industry;
+
+-- 22. List the ticker symbol, year, and the average price multiplied by volume for each year for Apple stock. Use the closing price of as the price for the entire day. 
+SELECT TickerSymbol, YEAR(TradeDate) AS TradeDateYear, (AVG(ST_Close) * SUM(CONVERT(bigint, Volume))) AS AverageClosingPrice
+    FROM StockData
+    WHERE TickerSymbol = 'AAPL'
+GROUP BY TickerSymbol, YEAR(TradeDate)
+ORDER BY TradeDateYear;
+
+-- 23. List the industry and the number of different companies in each industry for only those industries that have more than three companies.
+SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
+    FROM StockData
+GROUP BY Industry
+HAVING COUNT(DISTINCT TickerSymbol) > 3
+ORDER BY Industry;
+
+-- 24. From the stock data table please list the ticker symbol, date, opening and closing stock prices, and day type of all stocks that were traded on a Holiday in 2018.  
+SELECT TickerSymbol, TradeDate, ST_Open, ST_Close, DayType
+    FROM StockData
+    INNER JOIN Calendar
+        ON (TradeDate = ActualDate)
+    WHERE DayType = 'Holiday' AND YEAR(TradeDate) = 2018
+ORDER BY TickerSymbol;
+
+    -- testing, I'm assuming he wants it the way above, not this way, but this was fun
+    SELECT  TickerSymbol, TradeDate, ST_Open, ST_Close, 
+        CASE
+            WHEN MONTH(TradeDate) = 1  AND DAY(TradeDate) = 1 THEN 'New Year'
+            WHEN MONTH(TradeDate) = 5  AND DAY(TradeDate) >= 25 AND DATENAME(weekday, TradeDate) = 'Monday' THEN 'Memorial Day'
+            WHEN MONTH(TradeDate) = 7  AND DAY(TradeDate) = 4 THEN 'Independence Day'
+            WHEN MONTH(TradeDate) = 9  AND DAY(TradeDate) <= 7 AND DATENAME(weekday, TradeDate) = 'Monday' THEN 'Labor Day'
+            WHEN MONTH(TradeDate) = 11 AND DAY(TradeDate) BETWEEN 22 AND 28 AND DATENAME(weekday, TradeDate) = 'Thursday' THEN 'Thanksgiving Day'
+            WHEN MONTH(TradeDate) = 12 AND DAY(TradeDate) = 25 THEN 'Christmas Day'
+            ELSE 'Normal day'
+        END AS DayType
+        FROM StockData
+        WHERE 
+            CASE
+                WHEN MONTH(TradeDate) = 1  AND DAY(TradeDate) = 1 THEN 'New Year'
+                WHEN MONTH(TradeDate) = 5  AND DAY(TradeDate) >= 25 AND DATENAME(weekday, TradeDate) = 'Monday' THEN 'Memorial Day'
+                WHEN MONTH(TradeDate) = 7  AND DAY(TradeDate) = 4 THEN 'Independence Day'
+                WHEN MONTH(TradeDate) = 9  AND DAY(TradeDate) <= 7 AND DATENAME(weekday, TradeDate) = 'Monday' THEN 'Labor Day'
+                WHEN MONTH(TradeDate) = 11 AND DAY(TradeDate) BETWEEN 22 AND 28 AND DATENAME(weekday, TradeDate) = 'Thursday' THEN 'Thanksgiving Day'
+                WHEN MONTH(TradeDate) = 12 AND DAY(TradeDate) = 25 THEN 'Christmas Day'
+                ELSE 'Normal day'
+            END != 'Normal day'
+            AND YEAR(TradeDate) = 2018
+    ORDER BY TickerSymbol, TradeDate;
+
+-- 25. From the stock data table please list the ticker symbol, industry, trade date, opening, closing, high, and low stock prices, and volume of all stocking that the company is from CA.
+SELECT s.TickerSymbol, s.Industry, TradeDate, ST_Open, ST_Close, ST_High, ST_Low, Volume, [State]
+    FROM StockData AS s
+    INNER JOIN CompanyInformation AS c
+        ON (s.TickerSymbol = c.TickerSymbol)
+    WHERE [State] = 'CA'
+ORDER BY TickerSymbol;
+
+-- 26. List all the columns and rows from StockData, Calendar, and CompanyInformation tables.
+SELECT *
+    FROM StockData AS s
+    FULL JOIN CompanyInformation AS c
+        ON (s.TickerSymbol = c.TickerSymbol)
+    FULL JOIN Calendar AS cl
+        ON (TradeDate = ActualDate);
+
+
+-- 27.List the day of week and every date that falls on a weekend from the Calendar table and all rows from the Stock Data table.
+SELECT s.*, ActualDate, DayOfWeek
+FROM StockData AS s
+    FULL JOIN Calendar AS cl
+        ON (TradeDate = ActualDate)
+    WHERE DayOfWeek IN('Friday', 'Saturday', 'Sunday');
+
+-- 28. Please return all combinations of Toys and Colors.  
+SELECT * 
+    FROM Toys 
+    CROSS JOIN Colors;
+
+-- ! no IDs higher than 12
+-- 29. Please return all combinations of Toys and Colors.  Include only those toys with an ID larger than 12 and please exclude colors that begin with the letter ‘B’.  
+SELECT * 
+    FROM Toys AS t
+    CROSS JOIN Colors AS c
+    WHERE t.ToyID > 12 AND ColorName NOT LIKE 'B%';
+
+    -- testing 
+    SELECT * 
+        FROM Toys AS t
+        CROSS JOIN Colors AS c
+        WHERE t.ToyID > 3 AND ColorName NOT LIKE 'B%';
+
+-- 30. List the ticker symbol and the percentage of each ticker symbol's total number of trading days to the total number of days for all stocks.
+DECLARE @AllDaysForStocks int; -- Declare the variable to be used.
+SET @AllDaysForStocks = (SELECT COUNT(DISTINCT TradeDate) FROM StockData); -- Initialize the variable.
+SELECT TickerSymbol, CONCAT(CAST(ROUND((COUNT(DISTINCT TradeDate) * 1.0 / @AllDaysForStocks) * 100, 2) AS NUMERIC(10,2)), '%') AS PercentageOfDays
+    FROM StockData
+GROUP BY TickerSymbol
+ORDER BY PercentageOfDays DESC, TickerSymbol;
+    
+    -- testing
+    SELECT TickerSymbol, 
+        COUNT(DISTINCT TradeDate) AS TradeDate,
+        COUNT(ActualDate) AS ActualDate,
+        (SELECT COUNT(DISTINCT TradeDate) FROM StockData) AS DaysForAll,
+        CONCAT(COUNT(DISTINCT TradeDate) / (SELECT COUNT(DISTINCT TradeDate) FROM StockData) * 100.0, '%') AS PercentageOfDays
+        FROM StockData
+        RIGHT JOIN Calendar
+            ON TradeDate = ActualDate
+    GROUP BY TickerSymbol;
+
+    SELECT COUNT(*) FROM Calendar;
+    -- 55152
+
+    SELECT DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) FROM StockData;
+    -- 7302
+
+    SELECT COUNT(DISTINCT TradeDate) FROM StockData;
+    -- 5189
+
+    SELECT TickerSymbol, 
+        COUNT(DISTINCT TradeDate) AS TradeDate,
+        (SELECT COUNT(DISTINCT TradeDate) FROM StockData) AS DaysForAllStocks,
+        CONCAT(COUNT(DISTINCT TradeDate) * 1.0 / (SELECT COUNT(DISTINCT TradeDate) FROM StockData) * 100, '%') AS PercentageOfDays
+        FROM StockData
+    GROUP BY TickerSymbol
+    ORDER BY PercentageOfDays;
+
+    SELECT TickerSymbol, CONCAT((COUNT(DISTINCT TradeDate) * 1.0 / (SELECT COUNT(DISTINCT TradeDate) FROM StockData)) * 100, '%') AS PercentageOfDays
+        FROM StockData
+    GROUP BY TickerSymbol
+    ORDER BY PercentageOfDays DESC;
+
+    -- Declare the variable to be used.
+    DECLARE @AllDaysForStocks int;
+    -- Initialize the variable.
+    SET @AllDaysForStocks = (SELECT COUNT(DISTINCT TradeDate) FROM StockData);
+    SELECT TickerSymbol, CONCAT((COUNT(DISTINCT TradeDate) * 1.0 / @AllDaysForStocks) * 100, '%') AS PercentageOfDays, @AllDaysForStocks AS AllDays
+        FROM StockData
+    GROUP BY TickerSymbol
+    ORDER BY PercentageOfDays DESC;
+
+    -- Declare the variable to be used.
+    DECLARE @AllDaysForStocks int;
+    -- Initialize the variable.
+    SET @AllDaysForStocks = (SELECT COUNT(DISTINCT TradeDate) FROM StockData);
+    SELECT TickerSymbol, CONCAT(CAST(ROUND((COUNT(DISTINCT TradeDate) * 1.0 / @AllDaysForStocks) * 100, 2) AS NUMERIC(10,2)), '%') AS PercentageOfDays
+        FROM StockData
+    GROUP BY TickerSymbol
+    ORDER BY PercentageOfDays DESC;
+
+-- ! start here *************************************************************************************
+-- 31. List the trade dates in descending order and open price in ascending order of all the stocks that open with a price greater than the average open price.
+
+
+-- 32. List the number of stocks that have a greater than average high price that were traded on March 9th, 2018.  Call it NumberOfStocksAboveAverageHighIn2018.
+
+
+-- 33. List the ticker symbol and the average closing for a stock that has the largest average closing price. 
+
+
+-- 34. List the number of shares (including fractions of shares) you could have purchased with $2000 at the low price on the day when the high to low price ratio was highest.
+
+
+-- 35. Any suggestions of this assignment?
+-- It would be really nice to have a result set, to verify our queries.
+
+
+
+
+
+-- in class, 2/18/2020
+-- 1 on the board
+-- teachers way
+SELECT sd.TickerSymbol, ST_Open, ST_Close, [state] AS 'US State'
+    FROM stockData AS sd JOIN CompanyInformation AS ci ON (sd.TickerSymbol = ci.TickerSymbol)
+    WHERE YEAR(TradeDate) = 2018;
+-- mine
+SELECT sd.TickerSymbol, ST_Open, ST_Close, [state] AS 'US State'
+    FROM stockData AS sd
+    INNER JOIN CompanyInformation AS ci
+        ON sd.TickerSymbol = ci.TickerSymbol
+    WHERE YEAR(TradeDate) = 2018;
+
+-- 2 on the board
+SELECT TickerSymbol, AVG(ST_Close) AS AverageClosingPrice
+    FROM StockData
+GROUP BY TickerSymbol;
+
+-- 1) List TickerSymbol, company name, industry, trading date, stock closing price, volume.
+SELECT sd.TickerSymbol, CompanyName, Industry, TradeDate, ST_Close, Volume
+    FROM StockData AS sd 
+    INNER JOIN CompanyInformation AS ci
+        ON (sd.TickerSymbol = ci.TickerSymbol);
+
+SELECT *
+FROM table_name
+INNER JOIN table_name
+    ON column_name = column_name;
+ 
+-- 2) List TickerSymbol, company name, industry, and the total amount of volume.
+SELECT sd.TickerSymbol, CompanyName, sd.Industry, SUM(CONVERT(bigint, Volume)) AS TotalAmountOfVolume
+    FROM StockData AS sd 
+    INNER JOIN CompanyInformation AS ci
+        ON (sd.TickerSymbol = ci.TickerSymbol)
+GROUP BY sd.TickerSymbol, CompanyName, sd.Industry
+ORDER BY sd.TickerSymbol, CompanyName, sd.Industry
+
+-- 3) List any dates from 2000 to 2019 with the day name that don’t have trade on that day.
+SELECT c.ActualDate, c.DayOFWeek
+    FROM StockData AS s
+    RIGHT JOIN Calendar AS c
+        ON (TradeDate = ActualDate)
+    WHERE TradeDate IS NULL AND ActualDate BETWEEN '1/1/2000' AND '12/31/2019'
+ORDER BY ActualDate;
+
+-- Cali
+SELECT ActualDate, DayOfWeek
+	FROM StockData a RIGHT JOIN Calendar b ON (a.TradeDate = b.ActualDate)
+	WHERE ActualDate BETWEEN '1-1-2000' AND '12-31-2019' AND TradeDate IS NULL;
+
+
+-- 4) List PriceID, TickerSymbol, Industry, TradeDate, all stock price, volume, day of week, day type, company name and the state that the company is located in.
+
+-- Practice
+-- 1) List TickerSymbol, company name, industry, trading date, stock closing price, volume.
+SELECT A.TickerSymbol, CompanyName, A.Industry, TradeDate, ST_Close, Volume
+	FROM StockData A JOIN CompanyInformation B ON (A.TickerSymbol = B.TickerSymbol)
+    
+-- 2) List TickerSymbol, company name, industry, and the total amount of volume.
+SELECT a.TickerSymbol, CompanyName, a.Industry, SUM(Volume) AS TotalVolume
+	FROM StockData a JOIN CompanyInformation b ON (A.TickerSymbol=B.TickerSymbol)
+GROUP BY a.TickerSymbol, CompanyName, a.Industry;
+
+-- 3) List any dates from 2000 to 2019 with the day name that don’t have trade on that day.
+SELECT ActualDate, DayOfWeek
+	FROM StockData a RIGHT JOIN Calendar b ON (a.TradeDate = b.ActualDate)
+	WHERE ActualDate BETWEEN '1-1-2000' AND '12-31-2019' AND TradeDate IS NULL;
+
+-- 4) List PriceID, TickerSymbol, Industry, TradeDate, all stock price, volume, day of week, day type, company name and the state that the company is located in.
+SELECT PriceID, a.TickerSymbol, a.Industry, TradeDate, ST_Open,ST_Close, ST_High, ST_Low, Volume, [DayOfWeek], DayType, CompanyName, [State]
+	FROM StockData a JOIN CompanyInformation b ON (a.TickerSymbol = b.TickerSymbol) JOIN Calendar c ON (a.TradeDate = c.ActualDate)
+
