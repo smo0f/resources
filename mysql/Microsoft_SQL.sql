@@ -925,8 +925,9 @@ ORDER BY TradeDayPerMonth, AggregatedMonths;
 -- or
 
 SELECT [MonthName], COUNT(DISTINCT sd.TradeDate) AS TradeDayPerMonth 
-	FROM StockData AS sd LEFT JOIN Calendar AS c ON
-	(sd.TradeDate = c.ActualDate)
+	FROM StockData AS sd 
+    LEFT JOIN Calendar AS c 
+        ON (sd.TradeDate = c.ActualDate)
 	WHERE YEAR(TradeDate) = 2018
 GROUP BY [MonthName]
 ORDER BY TradeDayPerMonth, [MonthName];
@@ -941,8 +942,9 @@ ORDER BY TradeDayPerMonth, AggregatedMonths;
 -- or
 
 SELECT [MonthName], COUNT(DISTINCT s.TradeDate) AS TradeDayPerMonth, AVG(CONVERT(bigint, Volume)) AS AverageTradeVolume
-	FROM StockData AS s RIGHT JOIN Calendar AS c ON
-	(s.TradeDate = c.ActualDate)
+	FROM StockData AS s 
+    RIGHT JOIN Calendar AS c 
+        ON (s.TradeDate = c.ActualDate)
 	WHERE YEAR(TradeDate) = 2018
 GROUP BY [MonthName]
 ORDER BY COUNT(DISTINCT s.TradeDate), [MonthName];
@@ -1095,7 +1097,7 @@ SELECT TickerSymbol,
 GROUP BY TickerSymbol
 ORDER BY PercentOfTotal DESC;
 
-    -- mine
+    -- mine, I think mine is more correct
     SELECT TickerSymbol, 
         CONCAT(CAST(ROUND((COUNT(DISTINCT TradeDate) * 1.0 / 
             (SELECT COUNT(DISTINCT TradeDate) 
@@ -1224,7 +1226,7 @@ SELECT TOP 1 2000/ST_Low AS SharesPurchased
     )
 ORDER BY ST_Low;
 
-    -- mine
+    -- mine, mine is wrong because I misunderstood the question, but I was right and what I was looking for
     SELECT ST_Low, (2000 / ST_Low ) AS NumberOfShares
     FROM StockData
     WHERE (ST_High / ST_Low) = 
@@ -1386,34 +1388,1151 @@ ORDER BY AverageStockClosingPrice DESC;
 
 
 
+
+
+-- @ in class 2/27/20
+-- Team Russell Moore, Matt Cheney, Joseph Grigg
+SELECT GETDATE();
+SELECT DAY('2/16/2009');
+SELECT MONTH('2/16/2009');
+SELECT YEAR('2/16/2009');
+SELECT DATEPART(year, '2017/08/25');
+SELECT DATENAME(weekday, '2017/08/25');
+SELECT DATEADD(year, 1, '2017/08/25');
+SELECT DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) FROM StockData;
+
+SELECT AVG(ST_Close) FROM StockData;
+SELECT COUNT(ST_Close) FROM StockData;
+SELECT STDEV(ST_Close) FROM StockData;
+SELECT STDEVP(ST_Close) FROM StockData;
+SELECT VAR(ST_Close) FROM StockData;
+SELECT VARP(ST_Close) FROM StockData;
+
+SELECT ASCII('a');
+SELECT CHAR(66);
+SELECT LEFT('Hello', 3);
+SELECT RIGHT('Hello', 3);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- @ Задача 4
--- 1.	List the Year(current year), TickerSymbol, the previous year closing price, the current year closing price, the annual rate of return between 2000 and 2018. Order by TickerSymbol and the current year.
+-- ? https://www.youtube.com/watch?v=5KGjqnMss7g
+-- ? https://www.youtube.com/watch?v=UVrTj48AjW0
+-- ? https://docs.microsoft.com/en-us/sql/t-sql/functions/row-number-transact-sql?view=sql-server-ver15
+-- 1. List the Year(current year), TickerSymbol, the previous year closing price, the current year closing price, the annual rate of return between 2000 and 2018. Order by TickerSymbol and the current year.
+-- * teacher
+WITH PriceYearly_CTE AS (
+    SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, DATEPART(yyyy, TradeDate) AS [Year]
+        FROM StockData AS st
+        WHERE st.TradeDate IN ( -- get the last priceDate of each period
+            SELECT MAX(st2.TradeDate) AS a
+                FROM StockData AS st2
+                WHERE st.TickerSymbol = st2.TickerSymbol
+            GROUP BY DATEPART(yyyy, TradeDate)
+
+        )
+)
+
+SELECT b.[Year], b.TickerSymbol, a.ST_Close AS previousYearClosing, b.ST_Close AS CurrentYearClosing,
+    CASE WHEN b.ST_Close <> 0
+        THEN CONVERT(NUMERIC(16,4), 100 * (b.ST_Close - a.ST_Close) / b.ST_Close)
+    END AS YearlyReturnPercent
+    FROM PriceYearly_CTE AS a
+        INNER JOIN PriceYearly_CTE AS b
+            ON (a.[period] = b.[period] - 1) AND a.TickerSymbol = b.TickerSymbol
+    WHERE a.[Year] >= 2000 AND b.[Year] < 2019
+ORDER BY a.TickerSymbol, b.[Year];
+
+    -- testing
+    -- looks like a way to order "ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period"
+    SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, DATEPART(yyyy, TradeDate) AS [Year]
+        FROM StockData AS st
+        WHERE st.TradeDate IN ( -- get the last priceDate of each period
+            SELECT MAX(st2.TradeDate) AS a
+                FROM StockData AS st2
+                WHERE st.TickerSymbol = st2.TickerSymbol
+            GROUP BY DATEPART(yyyy, TradeDate)
+        )
+
+    -- !Msg 1033, Level 15, State 1, Line 11
+    -- ! The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified.
+    WITH PriceYearly_CTE AS (
+        SELECT TickerSymbol, ST_Close, DATEPART(yyyy, TradeDate) AS [Year]
+            FROM StockData AS st
+            WHERE st.TradeDate IN ( -- get the last priceDate of each period
+                SELECT MAX(st2.TradeDate) AS a
+                    FROM StockData AS st2
+                    WHERE st.TickerSymbol = st2.TickerSymbol
+                ORDER BY TickerSymbol, TradeDate
+                GROUP BY DATEPART(yyyy, TradeDate)
+            )
+    )
+
+    SELECT * FROM PriceYearly_CTE;
+
+    -- ok
+    WITH PriceYearly_CTE AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, DATEPART(yyyy, TradeDate) AS [Year]
+            FROM StockData AS st
+            WHERE st.TradeDate IN ( -- get the last priceDate of each period
+                SELECT MAX(st2.TradeDate) AS a
+                    FROM StockData AS st2
+                    WHERE st.TickerSymbol = st2.TickerSymbol
+                GROUP BY DATEPART(yyyy, TradeDate)
+
+            )
+    )
+
+    SELECT * FROM PriceYearly_CTE;
+    -- the query above gets the stock and its closing price for that year
+    -- Period               TickerSymbol ST_Close                                Year
+    -- -------------------- ------------ --------------------------------------- -----------
+    -- 1                    AAPL         1.0625000000000                         2000
+    -- 2                    AAPL         1.5642860000000                         2001
+    -- 3                    AAPL         1.0235710000000                         2002
+    -- 4                    AAPL         1.5264290000000                         2003
+    -- 5                    AAPL         4.6000000000000                         2004
+
+    SELECT b.[Year], b.TickerSymbol, a.ST_Close AS previousYearClosing, b.ST_Close AS CurrentYearClosing,
+        CASE WHEN b.ST_Close <> 0
+            THEN CONVERT(NUMERIC(16,4), 100 * (b.ST_Close - a.ST_Close) / b.ST_Close)
+        END AS YearlyReturnPercent
+        FROM PriceYearly_CTE AS a
+            INNER JOIN PriceYearly_CTE AS b
+                ON (a.[period] = b.[period] - 1) AND a.TickerSymbol = b.TickerSymbol
+        WHERE a.[Year] >= 2000 AND b.[Year] < 2019
+    ORDER BY a.TickerSymbol, b.[Year];
+
+    -- ranking functions
+        -- ? https://docs.microsoft.com/en-us/sql/t-sql/functions/ranking-functions-transact-sql?view=sql-server-ver15
+        -- SELECT p.FirstName, p.LastName  
+        --*     ,ROW_NUMBER() OVER (ORDER BY a.PostalCode) AS "Row Number"  
+        --*    ,RANK() OVER (ORDER BY a.PostalCode) AS Rank  
+        --*     ,DENSE_RANK() OVER (ORDER BY a.PostalCode) AS "Dense Rank"  
+        --*     ,NTILE(4) OVER (ORDER BY a.PostalCode) AS Quartile  
+        --     ,s.SalesYTD  
+        --     ,a.PostalCode  
+        -- FROM Sales.SalesPerson AS s   
+        --     INNER JOIN Person.Person AS p   
+        --         ON s.BusinessEntityID = p.BusinessEntityID  
+        --     INNER JOIN Person.Address AS a   
+        --         ON a.AddressID = p.BusinessEntityID  
+        -- WHERE TerritoryID IS NOT NULL AND SalesYTD <> 0;
+        -- Here is the result set.
+        -- TABLE 2
+        -- FirstName	LastName	    Row Number	Rank	Dense Rank	Quartile	SalesYTD	    PostalCode
+        -- Michael	    Blythe	        1	        1	    1	        1	        4557045.0459	98027
+        -- Linda	    Mitchell	    2	        1	    1	        1	        5200475.2313	98027
+        -- Jillian	    Carson	        3	        1	    1	        1	        3857163.6332	98027
+        -- Garrett	    Vargas	        4	        1	    1	        1	        1764938.9859	98027
+        -- Tsvi	        Reiter	        5	        1	    1	        2	        2811012.7151	98027
+        -- Shu	        Ito	            6	        6	    2	        2	        3018725.4858	98055
+        -- José	        Saraiva	        7	        6	    2	        2	        3189356.2465	98055
+        -- David	    Campbell	    8	        6	    2	        3	        3587378.4257	98055
+        -- Tete	        Mensa-Annan	    9	        6	    2	        3	        1931620.1835	98055
+        -- Lynn	        Tsoflias	    10	        6	    2	        3	        1758385.926	    98055
+        -- Rachel	    Valdez	        11	        6	    2	        4	        2241204.0424	98055
+        -- Jae	        Pak	            12	        6	    2	        4	        5015682.3752	98055
+        -- Ranjit	    Chudukatil	    13	        6	    2	        4	        3827950.238	    98055
+
+-- 2. List the year, month, ticker symbol, previous month closing, current month closing, monthly return percent between 2000 and 2018. Order by TickerSymbol, year and month. 
+WITH PriceMonthly_CTE AS (
+    SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, YEAR(TradeDate) AS [Year], MONTH(TradeDate) AS [Month]
+        FROM StockData AS st
+        WHERE st.TradeDate IN ( -- get the last priceDate of each period
+            SELECT MAX(st2.TradeDate) AS a
+                FROM StockData AS st2
+                WHERE st.TickerSymbol = st2.TickerSymbol
+            GROUP BY YEAR(TradeDate), MONTH(TradeDate)
+
+        )
+)
+
+SELECT b.[Year], b.[Month], b.TickerSymbol, a.ST_Close AS previousMonthClosing, b.ST_Close AS CurrentMonthClosing,
+    CASE WHEN b.ST_Close <> 0
+        THEN CONVERT(NUMERIC(16,4), 100 * (b.ST_Close - a.ST_Close) / b.ST_Close)
+    END AS MonthlyReturnPercent
+    FROM PriceMonthly_CTE AS a
+        INNER JOIN PriceMonthly_CTE AS b
+            ON (a.[period] = b.[period] - 1) AND a.TickerSymbol = b.TickerSymbol
+    WHERE a.[Year] >= 2000 AND b.[Year] < 2019
+ORDER BY a.TickerSymbol, b.[Year], b.[Month];
+
+-- 3. List the year, week, ticker symbol, previous week closing, current week closing, weekly return percent between 2000 and 2018. Order by TickerSymbol, the current year and week. 
+-- * teacher approved
+WITH PriceWeekly_CTE AS (
+    SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, YEAR(TradeDate) AS [Year], DATEPART(week, TradeDate) AS [Week]
+        FROM StockData AS st
+        WHERE st.TradeDate IN ( -- get the last priceDate of each period
+            SELECT MAX(st2.TradeDate) AS a
+                FROM StockData AS st2
+                WHERE st.TickerSymbol = st2.TickerSymbol
+            GROUP BY YEAR(TradeDate), DATEPART(week, TradeDate)
+        )
+)
+
+SELECT b.[Year], b.[Week], b.TickerSymbol, a.ST_Close AS previousWeekClosing, b.ST_Close AS CurrentWeekClosing,
+    CASE WHEN b.ST_Close <> 0
+        THEN CONVERT(NUMERIC(16,4), 100 * (b.ST_Close - a.ST_Close) / b.ST_Close)
+    END AS WeeklyReturnPercent
+    FROM PriceWeekly_CTE AS a
+        INNER JOIN PriceWeekly_CTE AS b
+            ON (a.[period] = b.[period] - 1) AND a.TickerSymbol = b.TickerSymbol
+    WHERE a.[Year] >= 2000 AND b.[Year] < 2019
+ORDER BY a.TickerSymbol, b.[Year], b.[Week]; 
+
+-- 4. Write a question and a query that uses the view and query approach.
+-- Write a query that list all company's, and these attributes company name, ticker symbol, phone number, address, city, state, ZIP Code, and country. Also provide the following attributes, days that trade has occurred for that stock, the date range that the company has been selling stocks both in days, and from lease date to greatest date. Then use that query to select all Companies from California.
+DROP VIEW IF EXISTS vCompanyInformation;
+GO
+
+CREATE VIEW vCompanyInformation
+AS
+SELECT ROW_NUMBER() OVER (ORDER BY CompanyName) AS NumInAlphabeticalOrder, CompanyName, s.TickerSymbol, 
+    PhoneNumber, [Address], City, [State], ZipCode, Country,
+    COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+    DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+    CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+    FROM StockData AS s
+        INNER JOIN CompanyInformation AS c
+            ON s.TickerSymbol = c.TickerSymbol
+    WHERE Volume <> 0
+GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country;
+GO
+
+SELECT * 
+    FROM vCompanyInformation
+    WHERE [State] = 'CA'; 
+
+-- 5. Write the same query with the derived tables approach.
+SELECT * 
+    FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY CompanyName) AS NumInAlphabeticalOrder, CompanyName, s.TickerSymbol, 
+            PhoneNumber, [Address], City, [State], ZipCode, Country,
+            COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+            DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+            CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+            FROM StockData AS s
+                INNER JOIN CompanyInformation AS c
+                    ON s.TickerSymbol = c.TickerSymbol
+            WHERE Volume <> 0
+        GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+    ) AS companyInformation
+    WHERE [State] = 'CA'; 
+
+-- ? Common Table Expressions (CTE) = WITH
+-- 6. Write the same query with the CTE approach. 
+WITH CompanyInformation_CTE AS (
+    SELECT ROW_NUMBER() OVER (ORDER BY CompanyName) AS NumInAlphabeticalOrder, CompanyName, s.TickerSymbol, PhoneNumber, 
+        [Address], City, [State], ZipCode, Country,
+        COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+        DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+        CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+        FROM StockData AS s
+            INNER JOIN CompanyInformation AS c
+                ON s.TickerSymbol = c.TickerSymbol
+        WHERE Volume <> 0
+    GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+)
+
+SELECT * 
+    FROM CompanyInformation_CTE
+    WHERE [State] = 'CA'; 
+
+-- ? https://www.sqlservertutorial.net/sql-server-triggers/
+-- ? https://www.youtube.com/watch?v=k0S4P-a6d5w
+-- ? https://docs.microsoft.com/en-us/sql/t-sql/statements/create-trigger-transact-sql?view=sql-server-ver15
+-- ? Extra stuff on update trigger https://www.youtube.com/watch?v=P_BREQy6bOo The ability to get old records 
+-- 7. Write a question or a problem and solve it using a trigger.
+-- Write a trigger to make sure that when a person updates or inserts information into the companyInformation table that the country field will be capitalized. For example us = US or uk = UK.
+DROP TRIGGER IF EXISTS UCaseCountry;
+GO
+
+CREATE TRIGGER UCaseCountry
+    ON CompanyInformation
+    AFTER INSERT, UPDATE
+    AS
+    BEGIN
+        -- Set variables 
+        Declare @TickerSymbol char(6)
+        Select @TickerSymbol = TickerSymbol from inserted
+        Declare @Country char(2)
+        Select @Country = Country from inserted
+
+        -- run upstate statement
+        UPDATE CompanyInformation
+        SET Country = UPPER(@Country)
+        WHERE TickerSymbol = @TickerSymbol;
+    END
+GO
+
+UPDATE CompanyInformation
+    SET Country = 'us'                               
+    WHERE TickerSymbol = 'AAPL';
+
+    -- From Daniel
+    CREATE TRIGGER ZCUCase
+        ON CompanyInformation
+        AFTER INSERT,UPDATE
+        AS
+        UPDATE CompanyInformation
+        SET State = UPPER(State)
+        WHERE State IN
+        (SELECT State
+            FROM INSERTED);
+
+    -- From video
+    CREATE TRIGGER tr_tblEMployee_ForInsert 
+        ON tblEmployee 
+        FOR INSERT 
+        AS
+        BEGIN
+            Declare @Id int
+            Select @Id = Id from inserted
+
+            insert into tblEmployeeAudit 
+            values ('New employee with Id = ' + Cast(@Id as nvarchar(5)) + ' is added at ' + cast(Getdate() as nvarchar (20) ))
+        END
+
+    CREATE TRIGGER tr_tblEMployee_ForDelete
+        ON tblEmployee 
+        FOR DELETE 
+        AS
+        BEGIN
+            Declare @Id int
+            Select @Id = Id from deleted
+
+            insert into tblEmployeeAudit 
+            values ('An existing employee with Id = ' + Cast(@Id as nvarchar(5)) + ' is deleted at ' + cast(Getdate() as nvarchar (20) ))
+        END
+
+        -- mine
+        -- ! didn't work because I was trying to change a primary/foreign key
+        DROP TRIGGER IF EXISTS TickerSymbolUpdate;
+        GO
+
+        CREATE TRIGGER TickerSymbolUpdate
+            ON CompanyInformation
+            AFTER UPDATE
+            AS
+            BEGIN
+                -- Set variables 
+                Declare @TickerSymbol char(6)
+                Select @TickerSymbol = TickerSymbol from inserted
+
+                Declare @TickerSymbol_old char(6)
+                Select @TickerSymbol_old = TickerSymbol from deleted
+
+                -- If they change the Dickerson update all records in stock data
+                IF @TickerSymbol != @TickerSymbol_old
+                BEGIN
+                    UPDATE StockData
+                    SET TickerSymbol = @TickerSymbol
+                    WHERE TickerSymbol = @TickerSymbol_old;
+                END
+
+            END
+        GO
+
+        UPDATE CompanyInformation
+            SET TickerSymbol = 'AAPLG'
+            WHERE TickerSymbol = 'AAPL';
+
+-- ? https://www.youtube.com/watch?v=Qu3E-oncF3g
+-- 8. Write a question and the stored procedure that solves the question.
+-- Write a stored procedure that list all company's, and these attributes company name, ticker symbol, phone number, address, city, state, ZIP Code, and country. Also provide the following attributes, days that trade has occurred for that stock, the date range that the company has been selling stocks both in days, and from lease date to greatest date.
+DROP PROCEDURE IF EXISTS GetCompanyInfo_sp;
+GO
+
+Create PROCEDURE GetCompanyInfo_sp
+AS
+Begin
+    SELECT CompanyName, s.TickerSymbol, PhoneNumber, 
+        [Address], City, [State], ZipCode, Country,
+        COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+        DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+        CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+        FROM StockData AS s
+            INNER JOIN CompanyInformation AS c
+                ON s.TickerSymbol = c.TickerSymbol
+        WHERE Volume <> 0  
+    GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+    ORDER BY CompanyName
+End
+GO
+
+EXEC GetCompanyInfo_sp;
+
+-- ? https://www.youtube.com/watch?v=Qu3E-oncF3g
+-- 9. Write a question and the stored procedure that solves the question using two input parameters.
+-- Write a stored procedure that list all company's, and these attributes company name, ticker symbol, phone number, address, city, state, ZIP Code, and country. Also provide the following attributes, days that trade has occurred for that stock, the date range that the company has been selling stocks both in days, and from lease date to greatest date. This stored procedure needs inputs to filter based on both state and country. Also created default that if no parameters are passed in or not all parameters are passed in the stored procedure will select all company information regardless of location.
+DROP PROCEDURE IF EXISTS GetCompanyInformation_sp;
+GO
+
+Create PROCEDURE GetCompanyInformation_sp 
+@State char(2) = NULL,
+@Country char(2) = NULL
+AS
+Begin
+    IF @State IS NULL OR @Country IS NULL
+        SELECT CompanyName, s.TickerSymbol, PhoneNumber, 
+            [Address], City, [State], ZipCode, Country,
+            COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+            DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+            CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+            FROM StockData AS s
+                INNER JOIN CompanyInformation AS c
+                    ON s.TickerSymbol = c.TickerSymbol
+            WHERE Volume <> 0  
+        GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+        ORDER BY CompanyName
+    ELSE
+        SELECT CompanyName, s.TickerSymbol, PhoneNumber, 
+            [Address], City, [State], ZipCode, Country,
+            COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+            DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+            CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+            FROM StockData AS s
+                INNER JOIN CompanyInformation AS c
+                    ON s.TickerSymbol = c.TickerSymbol
+            WHERE Volume <> 0 AND [State] = @State AND Country = @Country
+        GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+        ORDER BY CompanyName
+End
+GO
+
+EXEC GetCompanyInformation_sp @State = 'CA', @Country = 'US';
+
+    -- test exec
+    EXEC GetCompanyInformation_sp @State = 'CA', @Country = 'US';
+    EXEC GetCompanyInformation_sp @Country = 'US';
+    EXEC GetCompanyInformation_sp;
+
+-- ? https://www.c-sharpcorner.com/UploadFile/rohatash/select-insert-update-delete-using-stored-procedure-in-sql/
+-- 10. Write a stored procedure that is a full INSERT statement.
+DROP PROCEDURE IF EXISTS CompanyInsert_sp;
+GO
+
+Create PROCEDURE CompanyInsert_sp (
+    @TickerSymbol char(6),
+    @CompanyName char(50),
+    @Industry char(50),
+    @PhoneNumber char(20),
+    @Address char(50),
+    @City char(20),
+    @State char(2),
+    @ZipCode char(10),
+    @Country char(40)
+) 
+AS  
+BEGIN  
+    INSERT INTO CompanyInformation (TickerSymbol, CompanyName, Industry, PhoneNumber, [Address], City, [State], ZipCode, Country)  
+    VALUES (@TickerSymbol, @CompanyName, @Industry, @PhoneNumber, @Address, @City, @State, @ZipCode, @Country) 
+END  
+GO  
+
+EXEC CompanyInsert_sp
+    @TickerSymbol = 'EACC', 
+    @CompanyName = 'Extremely Awesome Cool Company',
+    @Industry = 'Tech',
+    @PhoneNumber = '800-243-4568',
+    @Address = 'Some Really Cool Address',
+    @City = 'Awesome City',
+    @State = 'UT',
+    @ZipCode = '84319',
+    @Country = 'US';
+   
+    -- for fun
+    DROP PROCEDURE IF EXISTS CompanyMasterInsertUpdateDelete_sp;
+    GO
+
+    Create PROCEDURE CompanyMasterInsertUpdateDelete_sp (
+        @TickerSymbol char(6) = NULL,
+        @CompanyName char(50) = NULL,
+        @Industry char(50) = NULL,
+        @PhoneNumber char(20) = NULL,
+        @Address char(50) = NULL,
+        @City char(20) = NULL,
+        @State char(2) = NULL,
+        @ZipCode char(10) = NULL,
+        @Country char(40) = NULL,
+        @ActionType varchar(20) = ''
+    ) 
+    AS  
+    BEGIN  
+        IF @ActionType = 'INSERT'
+            INSERT INTO CompanyInformation (TickerSymbol, CompanyName, Industry, PhoneNumber, [Address], City, [State], ZipCode, Country)  
+            VALUES (@TickerSymbol, @CompanyName, @Industry, @PhoneNumber, @Address, @City, @State, @ZipCode, @Country) 
+        IF @ActionType = '' OR @ActionType = 'SELECT'
+            SELECT * 
+                FROM CompanyInformation
+        IF @ActionType = 'UPDATE'
+            UPDATE CompanyInformation
+            SET TickerSymbol = @TickerSymbol,
+                CompanyName = @CompanyName,
+                Industry = @Industry,
+                PhoneNumber = @PhoneNumber,
+                [Address] = @Address,
+                City = @City,
+                [State] = @State,
+                ZipCode = @ZipCode,
+                Country = @Country
+            WHERE TickerSymbol = @TickerSymbol
+        IF @ActionType = 'DELETE'
+            DELETE FROM CompanyInformation 
+                WHERE TickerSymbol = @TickerSymbol
+    END  
+    GO  
+
+    EXEC CompanyMasterInsertUpdateDelete_sp
+        @TickerSymbol = 'EACC', 
+        @CompanyName = 'Extremely Awesome Cool Company',
+        @Industry = 'Tech',
+        @PhoneNumber = '800-243-4568',
+        @Address = 'Some Really Cool Address',
+        @City = 'Awesome City',
+        @State = 'UT',
+        @ZipCode = '84319',
+        @Country = 'UK',
+        @ActionType = 'INSERT';
+
+    -- for testing
+        -- to see if there
+        SELECT * FROM CompanyInformation WHERE TickerSymbol  = 'EACC';
+        -- select statement
+        EXEC CompanyMasterInsertUpdateDelete_sp @ActionType = 'SELECT';
+        -- select statement
+        EXEC CompanyMasterInsertUpdateDelete_sp;
+        -- delete statement
+        EXEC CompanyMasterInsertUpdateDelete_sp @ActionType = 'DELETE', @TickerSymbol = 'EACC';
+        -- update statement
+        EXEC CompanyMasterInsertUpdateDelete_sp
+            @TickerSymbol = 'EACC', 
+            @CompanyName = 'Extremely Awesome Cool Company',
+            @Industry = 'Tech',
+            @PhoneNumber = '800-243-4568',
+            @Address = 'Some Really Cool Address',
+            @City = 'Awesome City',
+            @State = 'UT',
+            @ZipCode = '84319',
+            @Country = 'US',
+            @ActionType = 'UPDATE';
 
 
--- 2.	List the year, month, ticker symbol, previous month closing, current month closing, monthly return percent between 2000 and 2018. Order by TickerSymbol, year and month. 
- 
-
--- 3.	List the year, week, ticker symbol, previous week closing, current week closing, weekly return percent between 2000 and 2018. Order by TickerSymbol, the current year and week. 
- 
-
--- 4.	Write a question and a query that uses the view and query approach.
 
 
--- 5.	Write the same query with the derived tables approach.
 
 
--- 6.	Write the same query with the CTE approach. 
 
 
--- 7.	Write a question or a problem and solve it using a trigger.
 
 
--- 8.	Write a question and the stored procedure that solves the question.
 
 
--- 9.	Write a question and the stored procedure that solves the question using two input parameters.
+
+-- @ in class 3/12/20
+
+-- CTE
+WITH cte_AvgOver100 (TickerSymbol, AverageClose) AS (
+    SELECT TickerSymbol, AVG(St_Close) AS AverageClose
+        FROM StockData
+        WHERE YEAR(TradeDate) = 2016
+    GROUP BY TickerSymbol
+    HAVING AVG(St_Close) >= 100
+)
+
+SELECT cte.TickerSymbol, CompanyName, City, [State], AverageClose  
+    FROM companyInformation AS c 
+        INNER JOIN cte_AvgOver100 AS cte
+            ON c.TickerSymbol = cte.TickerSymbol;
+
+-- Drived
+SELECT drv.TickerSymbol, CompanyName, City, [State], AverageClose  
+    FROM companyInformation AS c 
+        INNER JOIN (
+            SELECT TickerSymbol, AVG(St_Close) AS AverageClose
+                FROM StockData
+                WHERE YEAR(TradeDate) = 2016
+            GROUP BY TickerSymbol
+            HAVING AVG(St_Close) >= 100
+        ) AS drv
+            ON c.TickerSymbol = drv.TickerSymbol;
+
+-- View
+DROP VIEW IF EXISTS VIEW_AvgOver100;
+GO
+
+CREATE VIEW VIEW_AvgOver100
+AS
+SELECT TickerSymbol, AVG(St_Close) AS AverageClose
+    FROM StockData
+    WHERE YEAR(TradeDate) = 2016
+GROUP BY TickerSymbol
+HAVING AVG(St_Close) >= 100;
+GO
+
+SELECT v.TickerSymbol, CompanyName, City, [State], AverageClose  
+    FROM companyInformation AS c 
+        INNER JOIN VIEW_AvgOver100 AS v
+            ON c.TickerSymbol = v.TickerSymbol;
 
 
--- 10.	Write a stored procedure that is a full INSERT statement. 
 
 
+
+
+
+
+
+
+
+
+-- @ class 3/19/20
+-- Windows functions
+    -- ? https://www.red-gate.com/simple-talk/sql/t-sql-programming/sql-server-2012-window-function-basics/
+    -- ? https://www.youtube.com/watch?v=TzsrO4zTQj8
+    -- <window function> OVER
+    --   (
+    --     [ PARTITION BY <expression> [, ... n] ]
+    --     [ ORDER BY <expression> [ASC|DESC] [, ... n] ]
+    --     [ ROWS|RANGE <window frame> ]
+    --   )
+
+-- over BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    SELECT TickerSymbol, St_Close,
+        MIN(St_Close) OVER (ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS MinSt_Close, 
+        MAX(St_Close) OVER (ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS MaxSt_Close, 
+        AVG(St_Close) OVER (ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS AvgSt_Close, 
+        COUNT(St_Close) OVER (ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS CountSt_Close
+        FROM StockData
+        WHERE TickerSymbol = 'AAPL'
+    ORDER BY TickerSymbol, St_Close; 
+    -- search all, remove the where clause
+    -- AAPL     0.9371430000000     0.0600000000000     2039.5100100000000  51.2931463967792    420571
+
+    -- search by individually
+    -- AAPL     293.6499939000000   0.9371430000000     293.6499939000000   59.5037407960047    5031
+    -- AAV.TO   1.3899999860000     1.3899999860000     10.1800000000000    5.5194825560607     2551
+
+-- partition
+    SELECT TickerSymbol, St_Close,
+        MIN(St_Close) OVER (PARTITION BY TickerSymbol ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS MinSt_Close, 
+        MAX(St_Close) OVER (PARTITION BY TickerSymbol ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS MaxSt_Close, 
+        AVG(St_Close) OVER (PARTITION BY TickerSymbol ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS AvgSt_Close, 
+        COUNT(St_Close) OVER (PARTITION BY TickerSymbol ORDER BY TickerSymbol ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS CountSt_Close
+        FROM StockData
+    ORDER BY TickerSymbol, St_Close;
+
+    -- AAPL     293.6499939000000   0.9371430000000     293.6499939000000   59.5037407960047    5031
+    -- AAV.TO   1.3899999860000     1.3899999860000     10.1800000000000    5.5194825560607     2551
+
+-- selecting one row before and one room after for comparisons
+    WITH PriceYearly_CTE AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, DATEPART(yyyy, TradeDate) AS [Year]
+            FROM StockData AS st
+            WHERE st.TradeDate IN ( -- get the last priceDate of each period
+                SELECT MAX(st2.TradeDate) AS a
+                    FROM StockData AS st2
+                    WHERE st.TickerSymbol = st2.TickerSymbol
+                GROUP BY DATEPART(yyyy, TradeDate)
+
+            )
+    )
+
+    SELECT b.[Year], b.TickerSymbol, 
+        a.ST_Close AS previousYearClosing, 
+        b.ST_Close AS CurrentYearClosing,
+        AVG(b.St_Close) OVER (PARTITION BY b.TickerSymbol ORDER BY b.TickerSymbol ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS [3YearAvgIFYearCountIS3],
+        COUNT(b.St_Close) OVER (PARTITION BY b.TickerSymbol ORDER BY b.TickerSymbol ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS YearCount,
+        CASE WHEN b.ST_Close <> 0
+            THEN CONVERT(NUMERIC(16,4), 100 * (b.ST_Close - a.ST_Close) / b.ST_Close)
+        END AS YearlyReturnPercent
+        FROM PriceYearly_CTE AS a
+            INNER JOIN PriceYearly_CTE AS b
+                ON (a.[period] = b.[period] - 1) AND a.TickerSymbol = b.TickerSymbol
+        WHERE a.[Year] >= 2000 AND b.[Year] < 2019
+    ORDER BY a.TickerSymbol, b.[Year];
+
+-- examples
+    SELECT 
+        SalesGroup,
+        Country,
+        AnnualSales,
+        COUNT(AnnualSales) OVER (PARTITION BY SalesGroup) AS CountryCount,
+        SUM(AnnualSales) OVER (PARTITION BY SalesGroup) AS TotalSales,
+        AVG(AnnualSales) OVER (PARTITION BY SalesGroup) AS AverageSales
+        FROM RegionalSales
+    ORDER BY SalesGroup, AnnualSales DESC;
+
+    SELECT DISTINCT
+        SalesGroup,
+        COUNT(AnnualSales) OVER (PARTITION BY SalesGroup) AS CountryCount,
+        SUM(AnnualSales) OVER (PARTITION BY SalesGroup) AS TotalSales,
+        AVG(AnnualSales) OVER (PARTITION BY SalesGroup) AS AverageSales
+        FROM RegionalSales
+    ORDER BY TotalSales DESC;
+
+    -- using our data 
+    SELECT DISTINCT 
+        TickerSymbol,
+        MIN(St_Close) OVER (PARTITION BY TickerSymbol) AS MinSt_Close, 
+        MAX(St_Close) OVER (PARTITION BY TickerSymbol) AS MaxSt_Close, 
+        AVG(St_Close) OVER (PARTITION BY TickerSymbol) AS AvgSt_Close, 
+        COUNT(St_Close) OVER (PARTITION BY TickerSymbol) AS CountSt_Close
+        FROM StockData
+    ORDER BY TickerSymbol, St_Close;
+    -- using our data end
+
+-- LAG() LEAD()
+    SELECT 
+        SalesGroup,
+        Country,
+        AnnualSales,
+        LAG(AnnualSales, 1) OVER (PARTITION BY SalesGroup ORDER BY AnnualSales DESC) AS PreviousSale,
+        LEAD(AnnualSales, 1) OVER (PARTITION BY SalesGroup ORDER BY AnnualSales DESC) AS NextSale
+        FROMRegionalSales;
+
+    -- using our data
+    -- ! it works and shows concept some of the data is not accurate in knowing that it pulled out
+    WITH PriceYearly_CTE AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY TickerSymbol, TradeDate) AS Period, TickerSymbol, ST_Close, DATEPART(yyyy, TradeDate) AS [Year]
+            FROM StockData AS st
+            WHERE st.TradeDate IN ( -- get the last priceDate of each period
+                SELECT MAX(st2.TradeDate) AS a
+                    FROM StockData AS st2
+                    WHERE st.TickerSymbol = st2.TickerSymbol
+                GROUP BY DATEPART(yyyy, TradeDate)
+
+            )
+    )
+
+    SELECT b.[Year], b.TickerSymbol, 
+        a.ST_Close AS previousYearClosing, 
+        LAG(b.ST_Close, 1) OVER (ORDER BY b.TickerSymbol) AS PreviousYearClosing2,
+        b.ST_Close AS CurrentYearClosing,
+        LEAD(b.ST_Close, 1) OVER (ORDER BY b.TickerSymbol) AS NextYearClosing,
+        AVG(b.St_Close) OVER (ORDER BY b.TickerSymbol ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS [3YearAvgIFYearCountIS3],
+        COUNT(b.St_Close) OVER (ORDER BY b.TickerSymbol ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS YearCount,
+        CASE WHEN b.ST_Close <> 0
+            THEN CONVERT(NUMERIC(16,4), 100 * (b.ST_Close - a.ST_Close) / b.ST_Close)
+        END AS YearlyReturnPercent
+        FROM PriceYearly_CTE AS a
+            INNER JOIN PriceYearly_CTE AS b
+                ON (a.[period] = b.[period] - 1) AND a.TickerSymbol = b.TickerSymbol
+        WHERE a.[Year] >= 2000 AND b.[Year] < 2019
+    ORDER BY a.TickerSymbol, b.[Year];
+    -- using our data end
+
+-- notes
+    -- Analytic Functions
+    -- * LAG
+        -- LAG returns data from the previous row within a window. The previous row is determined by the ORDER BY clause.
+    -- * LEAD
+        -- LEAD returns data from the subsequent row within a window. The previous row is determined by the ORDER BY clause.
+    -- * CUME_DIST
+        -- CUME_DIST returns the percentage of rows within the window that have a value less than or equal to the current value (when the order is ascending).
+    -- * FIRST_VALUE
+        -- FIRST_VALUE (column_name) returns the first value within a window, which will depend on the ORDER BY clause.
+    -- * LAST_VALUE
+        -- LAST_VALUE (column_name) returns the last value within a window, which will depend on the ORDER BY clause.
+
+
+
+
+-- 4 Select Industry, PriceID, CompanyName, where minimum close is greater than 150, with the TickerSymbol BP. Solve using view approach 
+DROP VIEW IF EXISTS cte
+GO
+
+CREATE VIEW cte AS
+Select Industry, PriceID, MIN(ST_Close) as MinimumClose, CompanyName
+	From StockData AS s JOIN CompanyInformation AS ci
+		ON(s.TickerSymbol = ci.TickerSymbol)
+	Where TickerSymbol = 'BP'
+Having MIN(ST_Close) > 150
+GO
+
+Select *
+    From cte;
+-- ====================================================   
+DROP VIEW IF EXISTS cte
+GO
+
+CREATE VIEW cte AS
+Select Industry, PriceID, MIN(ST_Close) as MinimumClose, CompanyName
+	From StockData AS s JOIN CompanyInformation AS ci
+		ON(s.TickerSymbol = ci.TickerSymbol)
+	Where TickerSymbol = 'BP'
+GROUP BY Industry, PriceID
+Having MIN(ST_Close) > 150
+GO
+
+Select *
+    From cte;
+-- ==============================================================
+Drop View IF Exists cte
+GO
+
+Create View cte AS
+Select TickerSymbol, Industry, PriceID, MIN(ST_Close) as MinimumClose
+	From StockData
+Group By TickerSymbol, Industry, PriceID
+Having MIN(ST_Close) > 150
+GO
+
+Select ci.TickerSymbol, PriceID, CompanyName, MinimumClose
+    From cte JOIN CompanyInformation AS ci
+		ON(cte.TickerSymbol = ci.TickerSymbol);
+
+
+
+
+
+
+
+
+
+
+-- @ Задача 5
+-- Scalar user defined functions 
+-- ? https://www.youtube.com/watch?v=OV5CquR1Svo 
+    -- extra: Inline table valued functions
+    -- ? extra: https://www.youtube.com/watch?v=hs4mReAzESc
+    -- extra: Multi statement table valued functions
+    -- ? extra: https://www.youtube.com/watch?v=EgYW7tsNP6g
+-- 1. Create four useful, new functions that utilize the stock market data.
+-- 1.1 concatenate date range
+    DROP FUNCTION IF EXISTS dbo.ConactDate
+    GO
+
+    CREATE FUNCTION ConactDate (@FirstDate DATE, @SecondDatae DATE)
+    RETURNS varchar(50)
+    AS 
+    BEGIN
+        RETURN CONCAT(CAST(@FirstDate AS DATE), ' - ', CAST(@SecondDatae AS DATE))
+    END
+    GO
+
+    SELECT CompanyName, s.TickerSymbol, PhoneNumber, 
+        [Address], City, [State], ZipCode, Country,
+        COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+        DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+        dbo.ConactDate(MIN(TradeDate), MAX(TradeDate)) AS RangeOfDates
+        FROM StockData AS s
+            INNER JOIN CompanyInformation AS c
+                ON s.TickerSymbol = c.TickerSymbol
+        WHERE Volume <> 0  
+    GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+    ORDER BY CompanyName
+
+-- 1.2 find the age of a stock in years
+    DROP FUNCTION IF EXISTS dbo.StockAgeYears
+    GO
+
+    CREATE FUNCTION StockAgeYears (@MinStockAge DATE, @MaxStockAge DATE)
+    RETURNS INT
+    AS 
+    BEGIN
+        -- Set variable
+        DECLARE @Age INT
+        SET @Age = DATEDIFF(YEAR, @MinStockAge, @MaxStockAge) - 
+            CASE
+                WHEN (MONTH(@MinStockAge) > MONTH(@MaxStockAge)) OR
+                    (MONTH(@MinStockAge) = MONTH(@MaxStockAge) AND DAY(@MinStockAge) > DAY(@MaxStockAge))
+                THEN 1
+                ELSE 0
+            END
+        RETURN @Age
+    END
+    GO
+
+    SELECT TickerSymbol, dbo.StockAgeYears(MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInYears
+        FROM StockData  
+    GROUP BY TickerSymbol
+    ORDER BY TickerSymbol, RangeOfDatesInYears
+
+-- 1.3 find the age of stock in days
+    DROP FUNCTION IF EXISTS dbo.StockAgeDays
+    GO
+
+    CREATE FUNCTION StockAgeDays (@MinStockAge DATE, @MaxStockAge DATE)
+    RETURNS INT
+    AS 
+    BEGIN
+        -- Set variable
+        DECLARE @Age INT
+        SET @Age = DATEDIFF(DAY, @MinStockAge, @MaxStockAge) - 
+            CASE
+                WHEN DAY(@MinStockAge) > DAY(@MaxStockAge)
+                THEN 1
+                ELSE 0
+            END
+        RETURN @Age
+    END
+    GO
+
+    SELECT TickerSymbol, dbo.StockAgeDays(MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays
+        FROM StockData  
+    GROUP BY TickerSymbol
+    ORDER BY RangeOfDatesInDays DESC, TickerSymbol
+
+-- 1.4 determine whether or not it is a holiday or a normal day, and what holiday is
+    DROP FUNCTION IF EXISTS dbo.HolidayType
+    GO
+
+    CREATE FUNCTION HolidayType (@StockDate DATE)
+    RETURNS varchar(20)
+    AS 
+    BEGIN
+        -- Set variable
+        DECLARE @day varchar(20)
+        SET @day = 
+            CASE
+                WHEN MONTH(@StockDate) = 1  AND DAY(@StockDate) = 1 THEN 'New Year'
+                WHEN MONTH(@StockDate) = 5  AND DAY(@StockDate) >= 25 AND DATENAME(weekday, @StockDate) = 'Monday' THEN 'Memorial Day'
+                WHEN MONTH(@StockDate) = 7  AND DAY(@StockDate) = 4 THEN 'Independence Day'
+                WHEN MONTH(@StockDate) = 9  AND DAY(@StockDate) <= 7 AND DATENAME(weekday, @StockDate) = 'Monday' THEN 'Labor Day'
+                WHEN MONTH(@StockDate) = 11 AND DAY(@StockDate) BETWEEN 22 AND 28 AND DATENAME(weekday, @StockDate) = 'Thursday' THEN 'Thanksgiving Day'
+                WHEN MONTH(@StockDate) = 12 AND DAY(@StockDate) = 25 THEN 'Christmas Day'
+                ELSE 'Normal day'
+            END
+        RETURN @day
+    END
+    GO
+
+    SELECT TickerSymbol, CAST(TradeDate AS DATE) AS TradeDate, dbo.HolidayType(TradeDate) AS HolidayType
+        FROM StockData  
+    ORDER BY HolidayType, TickerSymbol, TradeDate
+
+        -- testing
+        -- ? https://www.youtube.com/watch?v=OV5CquR1Svo
+        -- Scalar user defined functions, Scalar = returns a single value
+        DROP FUNCTION IF EXISTS dbo.Age
+        GO
+
+        CREATE FUNCTION Age (@DOB DATE)
+        RETURNS INT
+        AS 
+        BEGIN
+            -- Set variable
+            DECLARE @Age INT
+            SET @Age = DATEDIFF(YEAR, @DOB, GETDATE()) - 
+                CASE
+                    WHEN (MONTH(@DOB) > MONTH(GETDATE())) OR
+                        (MONTH(@DOB) = MONTH(GETDATE()) AND DAY(@DOB) > GETDATE())
+                    THEN 1
+                    ELSE 0
+                END
+            RETURN @Age
+        END
+        GO
+
+        SELECT dbo.Age('10/27/87') AS Age;
+
+        -- ? https://www.youtube.com/watch?v=hs4mReAzESc
+        -- Inline table valued functions
+            -- better performance than a Multi statement table valued functions
+        DROP FUNCTION IF EXISTS GetStockByTickerSymbol_fn
+        GO
+
+        CREATE FUNCTION GetStockByTickerSymbol_fn (@TickerSymbol CHAR(6))
+        RETURNS TABLE
+        AS 
+        RETURN (
+            SELECT *
+                FROM StockData
+                WHERE TickerSymbol = @TickerSymbol
+        )
+        GO
+
+        SELECT *
+            FROM GetStockByTickerSymbol_fn('AAPL')  
+        ORDER BY TickerSymbol
+
+            -- test, can select columns - yes, works like tables
+            SELECT TickerSymbol, TradeDate
+                FROM GetStockByTickerSymbol_fn('AAPL')  
+            ORDER BY TickerSymbol
+        
+        -- ? https://www.youtube.com/watch?v=EgYW7tsNP6g
+        -- Multi statement table valued functions
+
+-- ? https://www.youtube.com/watch?v=h3BtudZehuo
+-- ? https://www.sqlservertutorial.net/sql-server-basics/sql-server-pivot/
+-- ? https://docs.microsoft.com/en-us/sql/t-sql/queries/from-using-pivot-and-unpivot?view=sql-server-ver15
+-- 2. Follow the following example and create one crosstab report using a Pivot operator.  Please use your stock market data.
+SELECT Industry, US, CA, UK, FI, CH, BM, BS, IE, CY, BR, SG
+    FROM (
+        SELECT Industry, Country
+            FROM CompanyInformation
+    ) AS t
+	PIVOT
+	(
+        COUNT(Country)
+        FOR Country
+        IN (US, CA, UK, FI, CH, BM, BS, IE, CY, BR, SG)
+	) AS PivotTable
+ORDER BY Industry;
+
+    -- testing 
+    -- count of different companies
+    SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
+        FROM CompanyInformation
+    GROUP BY Industry
+    ORDER BY Industry;
+
+    -- count of companies in the tech industry
+    SELECT Industry, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
+        FROM CompanyInformation
+        WHERE Industry = 'Tech'
+    GROUP BY Industry;
+
+    -- count of companies in the tech industry, grouped by country
+    SELECT Industry, Country, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
+        FROM CompanyInformation
+        WHERE Industry = 'Tech'
+    GROUP BY Industry, Country
+    ORDER BY Industry, Country;
+
+    -- count of companies, grouped by country
+    SELECT Industry, Country, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
+        FROM CompanyInformation
+    GROUP BY Industry, Country
+    ORDER BY Industry, Country;
+
+    -- check to make sure we're not missing any countries
+    SELECT Industry, Country, COUNT(DISTINCT TickerSymbol) AS NumberOfCompanies
+        FROM CompanyInformation
+        WHERE Country NOT IN ('US', 'CA', 'UK', 'FI', 'CH', 'BM', 'BS', 'IE', 'CY', 'BR', 'SG')
+    GROUP BY Industry, Country
+    ORDER BY Industry, Country;
+
+-- ? https://www.red-gate.com/simple-talk/sql/t-sql-programming/sql-server-2012-window-function-basics/
+-- ? https://www.youtube.com/watch?v=TzsrO4zTQj8
+-- 3. Follow the following example and create separate queries demonstrating use of the following six Window SQL functions
+-- a. Row number ordered by attribute
+    SELECT ROW_NUMBER() OVER (ORDER BY St_Close) AS [RowNumber],
+	    TickerSymbol, St_Close, CAST(TradeDate AS DATE)
+        FROM StockData
+        WHERE TickerSymbol = 'AAPL';    
+-- b. RANK over and an ORDER BY an attribute.
+    SELECT RANK() OVER (ORDER BY St_Close) AS [Rank],
+	    TickerSymbol, St_Close, CAST(TradeDate AS DATE)
+        FROM StockData
+        WHERE TickerSymbol = 'AAPL';   
+-- c. DENSE_RANK over and an ORDER BY attribute.
+    SELECT DENSE_RANK() OVER (ORDER BY St_Close) AS [DenseRank],
+	    TickerSymbol, St_Close, CAST(TradeDate AS DATE)
+        FROM StockData
+        WHERE TickerSymbol = 'AAPL'; 
+-- d. NTILE(10) over and an ORDER BY attribute (use something other than the 10th percentile).
+    SELECT NTILE(4) OVER (ORDER BY St_Close) AS [Ntile],
+	    TickerSymbol, St_Close, CAST(TradeDate AS DATE)
+        FROM StockData
+        WHERE TickerSymbol = 'AAPL';
+-- e. Row number over a partitioned attribute (ROW_NUMBER()OVER(PARTITION BY).
+    SELECT ROW_NUMBER() OVER (PARTITION BY TickerSymbol ORDER BY TickerSymbol, St_Close) AS [Partition],
+	    TickerSymbol, St_Close, CAST(TradeDate AS DATE),
+		AVG(St_Close) OVER (PARTITION BY TickerSymbol ORDER BY TickerSymbol, St_Close ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS AvgSt_Close
+        FROM StockData; 
+-- f. NTILE(100) over an order by attribute (use something other than 100 percentile).
+    SELECT NTILE(15) OVER (ORDER BY St_Close) AS [Ntile],
+	    TickerSymbol, St_Close, CAST(TradeDate AS DATE)
+        FROM StockData
+        WHERE TickerSymbol = 'AAPL';
+
+-- 4. Follow the following example and create a VIEW and then create a nice, useful report in Access from the data returned in the VIEW.  Prove you made the connection, the VIEW and the report.
+    DROP VIEW IF EXISTS vCompanyInformation;
+    GO
+
+    CREATE VIEW vCompanyInformation
+    AS
+    SELECT ROW_NUMBER() OVER (ORDER BY CompanyName) AS NumInAlphabeticalOrder, CompanyName, s.TickerSymbol, 
+        PhoneNumber, [Address], City, [State], ZipCode, Country,
+        COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+        DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+        CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+        FROM StockData AS s
+            INNER JOIN CompanyInformation AS c
+                ON s.TickerSymbol = c.TickerSymbol
+        WHERE Volume <> 0
+    GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country;
+    GO
+
+    DROP PROCEDURE IF EXISTS GetCompanyInformation_sp;
+    GO
+
+    Create PROCEDURE GetCompanyInformation_sp 
+    @State char(2) = NULL
+    AS
+    Begin
+        IF @State IS NULL
+            SELECT * 
+                FROM vCompanyInformation
+        ELSE
+        SELECT * 
+                FROM vCompanyInformation
+                WHERE [State] = @State  
+    End
+    GO
+
+    EXEC GetCompanyInformation_sp @State = 'CA';
+
+        -- testing, if you're just looking for generic company information not filtered by state
+        EXEC GetCompanyInformation_sp;
+
+-- ? handout on performance from canves 
+-- ? https://www.youtube.com/watch?v=i_FwqzYMUvk
+-- ? https://www.youtube.com/watch?v=NGslt99VOCw
+-- ? extra https://www.youtube.com/watch?v=71tRKQBZCYc
+-- ? https://www.youtube.com/watch?v=jYS4PwKY6EM
+-- 5. Follow the below example and write a query and examine its performance without using an index.  Now experiment and do three separate indexes and performance examinations while trying to improve performance. Document each variation.
+WITH CompanyInformation_CTE AS (
+    SELECT ROW_NUMBER() OVER (ORDER BY CompanyName) AS NumInAlphabeticalOrder, CompanyName, s.TickerSymbol, PhoneNumber, 
+        [Address], City, [State], ZipCode, Country,
+        COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
+        DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
+        CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
+        FROM StockData AS s
+            INNER JOIN CompanyInformation AS c
+                ON s.TickerSymbol = c.TickerSymbol
+        WHERE Volume <> 0
+    GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
+)
+
+SELECT * 
+    FROM CompanyInformation_CTE
+    WHERE [State] = 'CA'; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- @ class 3/24/20
+-- Temporary table or auxiliary table
+CREATE TABLE #Cars (
+    Car_id int NOT NULL,
+    Car_color_code varchar(10),
+    Car_model_name varchar(20),
+    Car_code int,
+    Car_date_entered datetime
+);
