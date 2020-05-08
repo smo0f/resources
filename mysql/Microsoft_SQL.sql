@@ -2496,23 +2496,265 @@ ORDER BY Industry;
 -- ? https://www.youtube.com/watch?v=NGslt99VOCw
 -- ? extra https://www.youtube.com/watch?v=71tRKQBZCYc
 -- ? https://www.youtube.com/watch?v=jYS4PwKY6EM
+-- ? https://docs.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver15
+-- ? haven't looked at yet but want to https://www.sqlshack.com/tracing-and-tuning-queries-using-sql-server-indexes/
+-- ? haven't looked at yet but want to https://www.sqlshack.com/sql-index-overview-and-strategy/
 -- 5. Follow the below example and write a query and examine its performance without using an index.  Now experiment and do three separate indexes and performance examinations while trying to improve performance. Document each variation.
-WITH CompanyInformation_CTE AS (
-    SELECT ROW_NUMBER() OVER (ORDER BY CompanyName) AS NumInAlphabeticalOrder, CompanyName, s.TickerSymbol, PhoneNumber, 
-        [Address], City, [State], ZipCode, Country,
-        COUNT(DISTINCT TradeDate) AS DaysTradeOccurred,
-        DATEDIFF(day, MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInDays,
-        CONCAT(CAST(MIN(TradeDate) AS DATE), ' - ', CAST(MAX(TradeDate) AS DATE)) AS RangeOfDates
-        FROM StockData AS s
-            INNER JOIN CompanyInformation AS c
-                ON s.TickerSymbol = c.TickerSymbol
-        WHERE Volume <> 0
-    GROUP BY s.TickerSymbol, CompanyName, PhoneNumber, [Address], City, [State], ZipCode, Country
-)
+DROP INDEX IF EXISTS StockData.IX_StockData_TradeDate;
+DROP INDEX IF EXISTS StockData.IX_StockData_ST_Close;
+DROP INDEX IF EXISTS StockData.IX_StockData_ST_Open;
+SET STATISTICS IO ON;
+SET STATISTICS TIME ON;
+GO 
 
-SELECT * 
-    FROM CompanyInformation_CTE
-    WHERE [State] = 'CA'; 
+SELECT *
+    FROM StockData
+    WHERE TradeDate BETWEEN '1/1/2019' AND '12/31/2019' AND ST_Close > 100 AND ST_Open < 100;
+GO
+
+CREATE NONCLUSTERED INDEX IX_StockData_TradeDate ON StockData (TradeDate);
+GO
+
+SELECT *
+    FROM StockData
+    WHERE TradeDate BETWEEN '1/1/2019' AND '12/31/2019' AND ST_Close > 100 AND ST_Open < 100;
+GO
+
+CREATE NONCLUSTERED INDEX IX_StockData_ST_Close ON StockData (ST_Close);
+GO
+
+SELECT *
+    FROM StockData
+    WHERE TradeDate BETWEEN '1/1/2019' AND '12/31/2019' AND ST_Close > 100 AND ST_Open < 100;
+GO
+
+CREATE NONCLUSTERED INDEX IX_StockData_ST_Open ON StockData (ST_Open);
+GO
+
+SELECT *
+    FROM StockData
+    WHERE TradeDate BETWEEN '1/1/2019' AND '12/31/2019' AND ST_Close > 100 AND ST_Open < 100;
+GO
+
+
+    -- notes
+    -- Create a nonclustered index
+    CREATE INDEX index_name
+    ON table_name (column1, column2, ...);
+    CREATE UNIQUE INDEX index_name
+    ON table_name (column1, column2, ...);
+
+    -- Create a nonclustered index on a table or view
+    CREATE INDEX i1 ON t1 (col1);
+    CREATE NONCLUSTERED INDEX i1 ON t1 (col1);
+
+    -- Create a clustered index on a table and use a 3-part name for the table
+    CREATE CLUSTERED INDEX i1 ON d1.s1.t1 (col1);
+    CREATE CLUSTERED INDEX IX_ProductVendor_VendorID ON Purchasing..ProductVendor (VendorID);
+
+    -- Syntax for SQL Server and Azure SQL Database
+    -- Create a nonclustered index with a unique constraint
+    -- on 3 columns and specify the sort order for each column
+    CREATE UNIQUE INDEX i1 ON t1 (col1 DESC, col2 ASC, col3 DESC);
+
+-- ? https://www.red-gate.com/simple-talk/blogs/statistics-sql-pearsons-correlation/
+-- 6. Follow the below example and create a function that calculates a correlation coefficient between the closing stock prices of two different stocks. Account for the fact that you need two different ticker symbols and a begin and an end date for each stock to calculate a correlation coefficient. You may create the same function we built in class.
+DROP FUNCTION IF EXISTS dbo.fnGetCorrelationToo
+GO
+
+CREATE FUNCTION fnGetCorrelationToo 
+(
+    @TickerA CHAR(10), 
+    @TickerB CHAR(10), 
+    @DateStart DATETIME, 
+    @DateEnd DATETIME
+)
+RETURNS DECIMAL(22,6)
+AS
+BEGIN
+    -- declare variable 
+    DECLARE @Corr DECIMAL(22,6)
+    -- set variable
+    SET @Corr = (
+        SELECT (AVG(x.ST_Close * y.ST_Close) - (AVG(x.ST_Close) * AVG(y.ST_Close))) / (STDEVP(x.ST_Close) * STDEVP(y.ST_Close)) AS [Pearson r]
+   	        --correlation
+            FROM StockData AS x JOIN StockData AS y 
+            ON (x.TradeDate = y.TradeDate)
+            WHERE (x.TickerSymbol = @TickerA) 
+            AND (y.TickerSymbol = @TickerB)
+                AND (x.TradeDate >= @DateStart)
+                AND (x.TradeDate <= @DateEnd)
+    )
+    -- return variable
+    RETURN(@Corr)
+END
+GO
+
+SELECT dbo.fnGetCorrelationToo('AAPL', 'GOOG','1/1/2011','3/31/2011') AS CorrCoeff;
+
+    -- ===========================================================================
+    -- example from teacher similar function
+    DROP FUNCTION IF EXISTS dbo.fnGetCorrelationToo
+    GO
+    CREATE FUNCTION fnGetCorrelationToo
+        (
+        @TickerA CHAR(10),
+        @TickerB CHAR(10),
+        @DateStart DATETIME,
+        @DateEnd DATETIME
+        )
+    RETURNS DECIMAL(22,6)
+    AS
+    BEGIN
+        DECLARE @Corr DECIMAL(22,6)
+
+        SELECT 
+            @Corr =(COUNT(*)*SUM(x.ST_Close*y.ST_Close)-SUM(x.ST_Close)*SUM(y.ST_Close))/(
+            SQRT(COUNT(*)*SUM(SQUARE(x.ST_Close))-SQUARE(SUM(x.ST_Close)))*
+            SQRT(COUNT(*)*SUM(SQUARE(y.ST_Close))-SQUARE(SUM(y.ST_Close)))) 
+        --correlation
+        FROM StockData AS x JOIN StockData AS y 
+        ON (x.TradeDate = y.TradeDate)
+        WHERE (x.TickerSymbol = @TickerA) 
+        AND (y.TickerSymbol = @TickerB)
+            AND (x.TradeDate >= @DateStart)
+            AND (x.TradeDate <= @DateEnd)
+        RETURN(@Corr)
+
+    END
+    GO
+
+    SELECT dbo.fnGetCorrelationToo('MSFT', 'ORCL','1/1/2011','3/31/2011')
+    AS CorrCoeff;
+    -- ===========================================================================
+    -- mine v2 works
+    DROP FUNCTION IF EXISTS dbo.fnGetCorrelationToo
+    GO
+    CREATE FUNCTION fnGetCorrelationToo 
+    (
+        @TickerA CHAR(10), 
+        @TickerB CHAR(10), 
+        @DateStart DATETIME, 
+        @DateEnd DATETIME
+    )
+    RETURNS DECIMAL(22,6)
+    AS
+    BEGIN
+        -- declare variable 
+        DECLARE @Corr DECIMAL(22,6)
+        -- set variable
+        SET @Corr = (
+            SELECT 
+                (COUNT(*)*SUM(x.ST_Close*y.ST_Close)-SUM(x.ST_Close)*SUM(y.ST_Close))/(
+                SQRT(COUNT(*)*SUM(SQUARE(x.ST_Close))-SQUARE(SUM(x.ST_Close)))*
+                SQRT(COUNT(*)*SUM(SQUARE(y.ST_Close))-SQUARE(SUM(y.ST_Close)))) 
+                --correlation
+                FROM StockData AS x JOIN StockData AS y 
+                ON (x.TradeDate = y.TradeDate)
+                WHERE (x.TickerSymbol = @TickerA) 
+                AND (y.TickerSymbol = @TickerB)
+                    AND (x.TradeDate >= @DateStart)
+                    AND (x.TradeDate <= @DateEnd)
+        )
+        -- return variable
+        RETURN(@Corr)
+    END
+    GO
+
+    SELECT dbo.fnGetCorrelationToo('MSFT', 'ORCL','1/1/2011','3/31/2011')
+    AS CorrCoeff;
+    -- ===========================================================================
+    -- mine v3 works
+    DROP FUNCTION IF EXISTS dbo.fnGetCorrelationToo
+    GO
+    CREATE FUNCTION fnGetCorrelationToo 
+    (
+        @TickerA CHAR(10), 
+        @TickerB CHAR(10), 
+        @DateStart DATETIME, 
+        @DateEnd DATETIME
+    )
+    RETURNS DECIMAL(22,6)
+    AS
+    BEGIN
+        -- declare variable 
+        DECLARE @Corr DECIMAL(22,6)
+        -- set variable
+        SET @Corr = (
+            SELECT (AVG(x.ST_Close * y.ST_Close) - (AVG(x.ST_Close) * AVG(y.ST_Close))) / (STDEVP(x.ST_Close) * STDEVP(y.ST_Close)) AS [Pearson r]
+                --correlation
+                FROM StockData AS x JOIN StockData AS y 
+                ON (x.TradeDate = y.TradeDate)
+                WHERE (x.TickerSymbol = @TickerA) 
+                AND (y.TickerSymbol = @TickerB)
+                    AND (x.TradeDate >= @DateStart)
+                    AND (x.TradeDate <= @DateEnd)
+        )
+        -- return variable
+        RETURN(@Corr)
+    END
+    GO
+
+    SELECT dbo.fnGetCorrelationToo('MSFT', 'ORCL','1/1/2011','3/31/2011')
+    AS CorrCoeff;
+    -- ===========================================================================
+    -- testing
+        SELECT 
+            (COUNT(*)*SUM(x.ST_Close*y.ST_Close)-SUM(x.ST_Close)*SUM(y.ST_Close))/(
+            SQRT(COUNT(*)*SUM(SQUARE(x.ST_Close))-SQUARE(SUM(x.ST_Close)))*
+            SQRT(COUNT(*)*SUM(SQUARE(y.ST_Close))-SQUARE(SUM(y.ST_Close)))) 
+        --correlation
+        FROM StockData AS x JOIN StockData AS y 
+        ON (x.TradeDate = y.TradeDate)
+        WHERE (x.TickerSymbol = 'MSFT') 
+        AND (y.TickerSymbol = 'ORCL')
+            AND (x.TradeDate >= '1/1/2011')
+            AND (x.TradeDate <= '3/31/2011')
+        -- ===========================================================================
+        SELECT 
+            x.ST_Close AS X, y.ST_Close AS Y 
+        FROM StockData AS x JOIN StockData AS y 
+        ON (x.TradeDate = y.TradeDate)
+        WHERE (x.TickerSymbol = 'MSFT') 
+        AND (y.TickerSymbol = 'ORCL')
+            AND (x.TradeDate >= '1/1/2011')
+            AND (x.TradeDate <= '3/31/2011')
+        -- correlation coefficient matches based off of my Google doc
+        -- ===========================================================================
+        -- works !
+        WITH cte_correlation (X, Y) AS (
+            SELECT x.ST_Close AS X, y.ST_Close AS Y 
+                FROM StockData AS x JOIN StockData AS y 
+                ON (x.TradeDate = y.TradeDate)
+                WHERE (x.TickerSymbol = 'MSFT') 
+                AND (y.TickerSymbol = 'ORCL')
+                    AND (x.TradeDate >= '1/1/2011')
+                    AND (x.TradeDate <= '3/31/2011') 
+        )   
+
+        SELECT (AVG([X] * [Y]) - (AVG([X]) * AVG([Y]))) / (STDEVP([X]) * STDEVP([Y])) AS [Pearson r]
+            FROM cte_correlation;
+        -- ===========================================================================
+        -- from document
+        DECLARE @OurData TABLE
+        (
+            x NUMERIC(18, 6) NOT NULL,
+            y NUMERIC(18, 6) NOT NULL
+        );
+
+        INSERT INTO @OurData (x, y)
+        VALUES
+        (10, 7), (9, 13), (13, 11), (9, 8), (12, 13), (9, 11), (10, 11), (10, 12), (9, 8), (11, 9), (13, 13), (10, 11), (14, 15), (11, 13), (8, 8), (13, 13), (13, 11), (12, 10), (10, 12), (12, 7), (10, 12), (10, 12), (7, 9), (10, 11), (11, 8);
+        SELECT ((SUM(x * y) – (SUM(x) * SUM(y)) / COUNT(*)))/ (SQRT(SUM(x * x)– (SUM(x) * SUM (x)) / COUNT(*))* SQRT(SUM(y * y) – (SUM(y) * SUM(y)) / COUNT(*))) AS 'Pearsons r'
+            FROM @OurData;
+
+        -- or
+        SELECT (Avg(x * y) – (Avg(x) * Avg(y))) / (StDevP(x) * StDevP(y)) AS ‘Pearsons r’
+            FROM @ourData
+    
+
+
+
 
 
 
@@ -2536,3 +2778,69 @@ CREATE TABLE #Cars (
     Car_code int,
     Car_date_entered datetime
 );
+
+
+
+
+
+
+
+
+
+
+-- Helping out
+DROP FUNCTION IF EXISTS dbo.DailyGain
+GO
+
+CREATE FUNCTION DailyGain (@TickerSymbol char(6), @TradeDate date)
+RETURNS DECIMAL (16,8) 
+AS
+BEGIN
+    -- Set variable
+    DECLARE @DailyGain DECIMAL (16,8)
+    SET @DailyGain = (SELECT ST_Close-ST_Open
+        FROM StockData
+        WHERE TickerSymbol = @TickerSymbol AND TradeDate = @TradeDate)
+    RETURN @DailyGain
+End
+GO
+
+SELECT dbo.DailyGain('AAPL', '01-03-2001') AS DailyGain
+ 
+select ST_Close-ST_Open AS DailyGain
+from StockData
+where TickerSymbol = 'aapl' AND TradeDate = '01-03-2001';
+
+-- mine as a reference
+DROP FUNCTION IF EXISTS dbo.StockAgeYears
+GO
+
+CREATE FUNCTION StockAgeYears (@MinStockAge DATE, @MaxStockAge DATE)
+RETURNS INT
+AS 
+BEGIN
+    -- Set variable
+    DECLARE @Age INT
+    SET @Age = DATEDIFF(YEAR, @MinStockAge, @MaxStockAge) - 
+        CASE
+            WHEN (MONTH(@MinStockAge) > MONTH(@MaxStockAge)) OR
+                (MONTH(@MinStockAge) = MONTH(@MaxStockAge) AND DAY(@MinStockAge) > DAY(@MaxStockAge))
+            THEN 1
+            ELSE 0
+        END
+    RETURN @Age
+END
+GO
+
+SELECT TickerSymbol, dbo.StockAgeYears(MIN(TradeDate), MAX(TradeDate)) AS RangeOfDatesInYears
+    FROM StockData  
+GROUP BY TickerSymbol
+ORDER BY TickerSymbol, RangeOfDatesInYears
+
+-- calis query
+SELECT TradeYear, [1] AS [1st Quarter],[2] AS [2nd Quarter],[3] AS [3rd Quarter],[4] AS [4th Quarter], [1]+[2]+[3]+[4] AS Total
+    FROM
+    (SELECT YEAR(TradeDate) AS TradeYear, DATEPART(Q,TradeDate) AS TradeQuarter, Volume
+        FROM StockData) as srce
+    PIVOT (SUM(Volume) FOR TradeQuarter IN ([1],[2],[3],[4])) AS pvt
+ORDER BY TradeYear;
