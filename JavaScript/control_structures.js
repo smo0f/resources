@@ -148,3 +148,73 @@
                 console.log(`${key.toUpperCase()}: ${obj[key]}`);
             }
         // * while
+            let counter = 0;
+            while (counter <= 10) {
+                console.log(counter);
+                counter++;
+            }
+        // * do while
+            // do while run at least once
+            let counter = 10;
+            do {
+                console.log(counter);
+                counter++;    
+            } while (counter <= 10);
+        // brake and continue 
+            const array3 = ['Fred', 'Mike', 'Solly', 'Jesse', 'Annabelle', 'Ginger', 'Alexander']
+            for (const name of array3) {
+                if (name === 'Solly') {continue;} // continues on to the next iteration
+                if (name === 'Ginger') {break;} // breaks out of the loop
+                console.log(name);   
+            }
+        // Labeled Statements
+            // break
+                outerLoop: for (let i = 0; i < 10; i++) {
+                console.log('***Outer => ', i);
+                    for (let j = 0; j < 11; j++) {
+                        if (i > 5) {break outerLoop;}
+                        console.log('Inner => ', j);
+                    }                
+                }
+            // continue
+                outerLoop: for (let i = 0; i < 10; i++) {
+                console.log('***Outer => ', i);
+                    for (let j = 0; j < 11; j++) {
+                        if (i > 5) {continue outerLoop;}
+                        console.log('Inner => ', j);
+                    }                
+                }
+            // ? https://www.udemy.com/course/javascript-the-complete-guide-2020-beginner-advanced/learn/lecture/15918556#overview
+        // throw 
+            // throws a real JavaScript error
+            const userInput = parseInt('gogo');
+            if (isNaN(userInput)) {
+                throw {Message: 'Invalid user input, input must be a number'}
+            }
+            // ? https://www.udemy.com/course/javascript-the-complete-guide-2020-beginner-advanced/learn/lecture/15918570#overview
+        //  try catch
+            // creating error
+                getInput = () => {
+                    const userInput = parseInt('gogo');
+                    if (isNaN(userInput)) {
+                        throw {Message: 'Invalid user input, input must be a number'}
+                    }    
+                }
+            // try catch block
+                try {
+                    getInput() 
+                } catch (error) {
+                    console.log(error);
+                }
+            // try catch finally block
+                try {
+                    getInput() 
+                } catch (error) {
+                    console.log(error);
+                    // could send error to server analytic logs
+                    // you could then throw a console error
+                } finally {
+                    // this always runs
+                    console.log('Got Here!!!');
+                }
+            // ? https://www.udemy.com/course/javascript-the-complete-guide-2020-beginner-advanced/learn/lecture/15918576#overview

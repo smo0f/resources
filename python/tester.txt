@@ -1,0 +1,4 @@
+This is a bunch of string, just to see what I'm going to get.
+New line 2.
+And another line.
+And one more just for fun, the end.

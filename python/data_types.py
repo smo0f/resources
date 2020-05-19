@@ -148,7 +148,22 @@ print(cars)
 cars = ['Ford', 'BMW', 'Volvo']
 cars.sort(reverse=True)
 print(cars)
-
+# List Comprehensions
+# Format [do something to each item in the collection]
+# e.g. get the exponent of every number from 0 to 9
+print([num ** 2 for num in range(10)])
+print([type(thing) for thing in ['A String', 13, ['a', 'b', 'c'], {'name': 'paul'}]])
+# List Comprehensions with conditions 
+groceries = ['Spam', 'Eggs', 'Cheese', 'Ham', 'Milk']
+print([item for item in groceries if 'e' in item.lower()])
+# more examples
+new_array = [num ** 2 for num in range(10)]
+print(new_array)
+[item - 10 for item in new_array]
+print(new_array)
+new_array2 = [item - 10 for item in new_array]
+print(new_array)
+print(new_array2)
 
 # # dict/dictionary (Associative array or object)
 food = {'food': 'spam', 'taste': 'yum'} 
@@ -193,6 +208,3 @@ print(tuple1[1])
 # # Mutable – Liable to change after creation. 
 # Lists, 
 # Dictionaries
-
-
-

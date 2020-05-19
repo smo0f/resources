@@ -1,6 +1,8 @@
 // @ variables
     // # variables
         // var = old way
+        // difference between var, let, and const
+            // ? https://www.udemy.com/course/javascript-the-complete-guide-2020-beginner-advanced/learn/lecture/15942558#overview
         // let = able to change (type: number, obj, string, array)
             // make variable
             let name = 'Sam';

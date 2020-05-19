@@ -111,3 +111,72 @@ x = 0
 for index in range(10):
     x += 10
     print(f"The value of x is {x}.")  
+
+# while loop # * from teacher
+account_balance = 100
+while account_balance >= 0:
+    print(account_balance)
+    account_balance -= 5 # Equivalent to account_balance = account_balance - 5
+    if account_balance % 25 == 0:
+        print('Another 25 down the drain')
+print('Spam for dinner again....')
+
+# * from teacher, For Loop -> Loop through a container or any object that has __iter__ a property
+bag = ['A string', 13, ['a', 'b', 'c'], {'name': 'treasure chest'}]
+
+print(dir(bag))  # note __iter__ property # * looks like a list of methods
+
+for stuff in bag:
+    print(stuff, type(stuff))
+
+# * from teacher, Dictionaries
+fav_colors = {"bob": 'Blue', "amy": 'Red', "sue": 'Yellow', "t-dog": 'Green'}
+for name in fav_colors:
+    print(name + "'s", 'favorite color is', fav_colors[name])
+
+# * from teacher, Range -> Returns a sequence of numbers, by a specified step
+# Default step of "1", Default start of "0"
+for num in range(0, 101):
+    print(num)
+
+for num in range(0, 101, 2):
+    print(num)
+
+for num in range(101):
+    print(num)
+
+# NOTE: The last number (stop param) is NOT inclusive!
+
+# Continue -> skips all remaining code in the block for that loop cycle
+for num in range(0, 100, 2):
+    if num % 10 != 0:
+        print(f'{num} is not divisible by 10')
+        continue
+    print(num)
+
+#  other types of loops
+
+print([num ** 2 for num in range(10)])
+
+print([type(thing) for thing in ['A String', 13, ['a', 'b', 'c'], {'name': 'paul'}]])
+
+# List Comprehensions with conditions 
+groceries = ['Spam', 'Eggs', 'Cheese', 'Ham', 'Milk']
+print([item for item in groceries if 'e' in item.lower()])
+
+groceries = ['Spam', 'Eggs', 'Cheese', 'Ham', 'Milk']
+print([item.lower() for item in groceries if 'e' in item.lower()])
+
+# from mod 3 hmwk
+lines2 = [line.replace('redflag', 'greenlight') for line in lines]
+
+lines_greenlight = [line.replace('redflag', 'greenlight') for line in lines if 'redflag' in line]
+
+# from Udemy
+# ? https://www.udemy.com/course/the-modern-python3-bootcamp/learn/quiz/4373712#overview
+def statistics(file_name):
+    with open(file_name) as file:
+        lines = file.readlines()
+    return { "lines": len(lines),
+            "words": sum(len(line.split(" ")) for line in lines),
+            "characters": sum(len(line) for line in lines) }
