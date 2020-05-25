@@ -70,13 +70,6 @@
 def speak():
     print('Woof!')
 
-def add(a, r):
-    return a + r
-
-
-added = add(3,5)
-print(added, '!')
-print(add(3,5), 'e')
 
 # Once it has been defined we can invoke it.
 speak()

@@ -60,14 +60,10 @@ def dedupe(list_one, list_two):
 
 # WRITE CODE HERE
 
-def reverse(word_to_reverse):
-    return word_to_reverse[::-1]
-
 # Sample Answer
 def is_palindrome(string='kayak'):
     string = string.replace(' ', '').lower()
-
-    string_reverse = reverse(string)
+    string_reverse = string[::-1]
     if string_reverse == string:
         return True
     return False
@@ -100,14 +96,13 @@ def is_palindrome(test_word = 'kayak'):
 #Sample Answer
 def check_answer(x, y):
     try:
-        actual_answer = int(input(f'What does {x} + {y} = ?'))
-        expected_answer = x + y
-        if actual_answer == expected_answer:
-            print(f'{actual_answer} is correct!')
+        user_answer = int(input(f'What does {x} + {y} = ?'))
+        if user_answer == x + y:
+            print(f'{user_answer} is correct!')
         else:
-            raise ValueError(f'{actual_answer} is not the correct answer!')
+            raise ValueError(f'{user_answer} is not the correct answer!')
     except ValueError as e:
-        raise e
+        print(e)
 
 
 
@@ -168,9 +163,10 @@ def test_question_two():
 # Question 3
 def test_question_three():
     print('\n', '=============== Exercise 3 Test ===============')
-    x = random.randint(0, 10)
-    y = random.randint(0, 10)
+    x = 4
+    y = 5
     check_answer(x, y)
+
 
 
 #######################

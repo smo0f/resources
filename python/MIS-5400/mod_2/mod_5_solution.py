@@ -15,10 +15,15 @@ Define a function that meets the following reqs:
 '''
 
 def question_one(input):
+
+    print(type(input))
     if len(input) < 4:
         raise Exception('String must be at least 3 characters.')
 
-    return input.capitalize().replace('z', '5').replace('s', '5')
+    updated_string = input.replace('z', '5').replace('s', '5').capitalize()
+    return updated_string, '100'
+
+
 
 ##############
 # Question 2 #
@@ -54,6 +59,7 @@ Define a function that meets the following reqs:
 def question_three(sentence, word_to_be_replaced, new_word):
     return sentence.replace(word_to_be_replaced, new_word)
 
+
 #########
 # TESTS #
 #########
@@ -85,7 +91,7 @@ def test_question_two():
     # TEST REQ 1 - two chars should fail (This one expects an exception)
     print('Testing 3 char requirement')
     try:
-        output = question_one('ab')
+        output = question_two('ab')
     except Exception as e:
         print(f'SUCCESS. Test one passed... Following exception was thrown with 2 chars: {e}')
     else:

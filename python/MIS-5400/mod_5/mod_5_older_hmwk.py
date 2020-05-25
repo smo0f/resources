@@ -17,7 +17,7 @@
 '''
 Define a function that meets the following reqs:
 1. Accepts a string > 3 characters.
-2. If the string is less than 4 characters throw an Exception with an appropriate message.
+2. If the string is less than 4 characters raise an Exception with an appropriate message.
 3. Capitalizes ONLY the first letter in the sentence.
 4. Replaces all letters 'z' or 's' with '5'.
 5. Returns the new string (with capitalization and replaced letters)
@@ -44,15 +44,15 @@ def cap_and_replace(string):
 # print(cap_and_replace('zopdksfor'))
 # print(cap_and_replace('aopdksfor'))
 # print(cap_and_replace('zz'))
-
+    
 ##############
 # Question 2 #
 ##############
 '''
 Define a function that meets the following reqs:
 1. Accepts a string > 3 characters.
-2. If the string is less than 4 characters throw and Exception with an appropriate message.
-3. If the string contains any non-alpha characters, throw an appropriate message
+2. If the string is less than 4 characters raise an Exception with an appropriate message.
+3. If the string contains any non-alpha characters (EXCLUDING SPACES), raise an appropriate message
 4. Make all of the characters in the string lowercase
 5. Reverse the string
 6. Return the new string.
@@ -67,10 +67,10 @@ def alpha_reverse(string):
     try:
         # [line.replace('redflag', 'greenlight') for line in lines if 'redflag' in line]
         if string_len < 4:
-            raise Exception(f'This function only allows strings that are larger than three characters. You passed in {string_len} characters.')
+            raise ValueError(f'This function only allows strings that are larger than three characters. You passed in {string_len} characters.')
         elif len(non_alpha) > 0:
-            raise Exception(f'This function only allows alpha strings. You passed in these {non_alpha} unauthorized characters.')
-    except Exception as e:
+            raise ValueError(f'This function only allows alphanumeric strings. You passed in these {non_alpha} unauthorized characters.')
+    except ValueError as e:
         print(e)
         raise
     else: # if pass run this
@@ -123,11 +123,11 @@ def test_question_one():
     try:
         output = cap_and_replace('ab')
     except Exception as e:
-        print('SUCCESS. Test one passed... An exception was thrown with 2 chars.')
+        print('SUCCESS. Test one passed... An exception was raised with 2 chars.')
     else:
-        print ('FAILURE. No Exception was thrown with 2 chars!')
+        print ('FAILURE. No Exception was raised with 2 chars!')
 
-    # TEST REQ 2 / REQ 3 - capitalize first character (We don't expect an exception to be thrown on this one)
+    # TEST REQ 2 / REQ 3 - capitalize first character (We don't expect an exception to be raised on this one)
     print('\n--- Testing capitalization requirement. ---')
     test_sentence = 'this is all lowercaze.'
     expected_result = 'Thi5 i5 all lowerca5e.'
@@ -147,9 +147,9 @@ def test_question_two():
     try:
         output = alpha_reverse('ab')
     except Exception as e:
-        print('SUCCESS. Test one passed... An exception was thrown with 2 chars.')
+        print('SUCCESS. Test one passed... An exception was raised with 2 chars.')
     else:
-        print('FAILURE. No Exception was thrown with 2 chars!')
+        print('FAILURE. No Exception was raised with 2 chars!')
 
     # TEST REQ 2  - Expect error if not alpha
     print('\n--- Testing alpha requirement. Part 1 ---')
@@ -157,9 +157,9 @@ def test_question_two():
         test_sentence = 'contains a numb3r'
         alpha_reverse(test_sentence)
     except Exception as e:
-        print('SUCCESS. Test Q2, Req 2 Passed, an exception was thrown for non-alpha.')
+        print('SUCCESS. Test Q2, Req 2 Passed, an exception was raised for non-alpha.')
     else:
-        print('FAILURE. No Exception was thrown with non-alpha char.')
+        print('FAILURE. No Exception was raised with non-alpha char.')
 
     # TEST REQ 2  - Make sure all alpha passes
     print('\n--- Testing alpha requirement. Part 2 ---')
@@ -169,7 +169,7 @@ def test_question_two():
     except Exception as e:
         print('FAILURE. Alpha string threw exception')
     else:
-        print('SUCCESS. No exception was thrown for all alpha string')
+        print('SUCCESS. No exception was rased for all alpha string')
 
     # TEST REQ 3/4 - Reverse and lower
     print('\n--- Testing reverse and lowercasing requirement ---')

@@ -14,16 +14,15 @@ MIS 5400 Module 3 Homework Solution
 for num in range(2000, 6501):
     # Divisible by 5
     if num % 5 == 0:
-        print(num, 'Fitty')
+        print('Fitty')
 
     # Divisible by 7
     if num % 7 == 0:
-        print(num, 'Sevvy')
-
+        print('Sevvy')
 
     # Divisible by both 5 AND 7
     if num % 5 == 0 and num % 7 == 0:
-        print(num, '"Winner\'s win", said Bob')
+        print('"Winner\'s win", said Bob')
 
 
 ###############
@@ -46,7 +45,7 @@ for num in range(2000, 6501):
 '''
 import os
 
-# os.chdir(r'd:/usu/fall_2018/mod_3') # NOTE: Change this to the path that includes access.log
+os.chdir(r'd:/usu/fall_2018/mod_3') # NOTE: Change this to the path that includes access.log
 raw_log = open('access.log', 'r')
 logs = raw_log.readlines()
 raw_log.close()
