@@ -165,6 +165,13 @@ new_array2 = [item - 10 for item in new_array]
 print(new_array)
 print(new_array2)
 
+# Other approach, with only 1 file open at a time
+from csv import reader
+with open('fighters.csv') as file:
+	csv_reader = reader(file)
+	# data converted to list and saved to variable
+	fighters = [[s.upper() for s in row] for row in csv_reader] # * do stuff to the list in the list
+
 # # dict/dictionary (Associative array or object)
 food = {'food': 'spam', 'taste': 'yum'} 
 print(food)

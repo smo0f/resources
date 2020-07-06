@@ -171,3 +171,11 @@ path = r'C:\Users\truth\Desktop\code and resources\projects\resources\python\MIS
 with open(path, 'w') as f:
     # they already have a '\n' so don't add one
     f.write(''.join(lines_greenlight))
+
+
+# Other approach, with only 1 file open at a time
+from csv import reader
+with open('fighters.csv') as file:
+	csv_reader = reader(file)
+	# data converted to list and saved to variable
+	fighters = [[s.upper() for s in row] for row in csv_reader]
