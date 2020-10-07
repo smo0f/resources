@@ -172,6 +172,16 @@ lines2 = [line.replace('redflag', 'greenlight') for line in lines]
 
 lines_greenlight = [line.replace('redflag', 'greenlight') for line in lines if 'redflag' in line]
 
+# string loop
+string = "Hello World"
+print('string[5::2] =>', string[5::2])
+print('string[5::1] =>', string[5::1])
+print('string[-10:-3:1] =>', string[-10:-3:1])
+print('string[-3::1] =>', string[-3::1])
+print('string[-8::2] =>', string[-8::2])
+print('string[::2] =>', string[::2])
+print('string[::1] =>', string[::1])
+
 # from Udemy
 # ? https://www.udemy.com/course/the-modern-python3-bootcamp/learn/quiz/4373712#overview
 def statistics(file_name):
