@@ -2844,3 +2844,51 @@ SELECT TradeYear, [1] AS [1st Quarter],[2] AS [2nd Quarter],[3] AS [3rd Quarter]
         FROM StockData) as srce
     PIVOT (SUM(Volume) FOR TradeQuarter IN ([1],[2],[3],[4])) AS pvt
 ORDER BY TradeYear;
+
+
+
+
+
+
+
+
+
+
+
+
+-- # База Данных Складской Класс --------------------------------------------------------------------------------------------------
+
+YearOfInventory
+CONVERT(char(4), YEAR(DateOfInventory))
+
+QuarterOfInventory
+CONVERT(char(4), YEAR(DateOfInventory)) +
+CASE
+    WHEN MONTH(DateOfInventory) BETWEEN 1 AND 3 THEN 'Q1' 
+    WHEN MONTH(DateOfInventory) BETWEEN 4 AND 6 THEN 'Q2'
+    WHEN MONTH(DateOfInventory) BETWEEN 7 AND 9 THEN 'Q3' 
+ELSE 'Q4'
+END
+
+MonthOfInventory 
+CONVERT(char(4), YEAR(DateOfInventory)) +
+RIGHT('0'+CONVERT(varchar(2), MONTH(DateOfInventory)),2)
+
+
+Case
+    When ROUND([Measures].[Percent Rejected],4) < .0103 
+        Then 1
+    When ROUND([Measures].[Percent Rejected],4) >= .0103 AND ROUND([Measures].[Percent Rejected],4) < .0104 
+        Then .5
+    When ROUND([Measures].[Percent Rejected],4) >= .0104 AND ROUND([Measures].[Percent Rejected],4) < .0105  
+        Then 0
+    When ROUND([Measures].[Percent Rejected],4) >= .0105 AND ROUND([Measures].[Percent Rejected],4) < .0106  
+        Then -.5 
+    Else -1
+End
+
+Case
+    When KPIValue("Internet Sales KPI") >= 10000000 Then 1
+    When KPIValue("Internet Sales KPI") <= 10000000 AND KPIValue("Internet Sales KPI") >= 8500000 Then 0
+    Else -1
+End
