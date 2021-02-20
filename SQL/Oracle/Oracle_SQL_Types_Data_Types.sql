@@ -1,0 +1,2 @@
+-- @ Oracle SQL Types / Data Types
+    -- ? https://bookshelf.vitalsource.com/#/books/9780071799362/cfi/6/52!/4/14/2@0:100

@@ -13,8 +13,11 @@
         -- AAAF4yAABAAAHeKAAA       1
 
     -- # Some Comands
+        -- Show details about a table
         DESCRIBE customers;
-
+        -- Select all databases
+        SELECT * FROM DBA_USERS;
+        -- Get distinct column
         SELECT DISTINCT customer_ID
         FROM customers;
 
@@ -166,6 +169,10 @@
         SELECT pt.product_type_id, p.product_id 
         FROM product_types pt, products p;
         -- ex see example in link above
+            -- * SQL/92 standard, sould use this one
+            SELECT * 
+            FROM product_types 
+                CROSS JOIN products;
 
     -- # Joins
 
@@ -179,11 +186,18 @@
             -- Outer joins return a row even when one of the columns in the join condition contains a null value.
             -- Self joins return rows joined on the same table.
 
-        -- * Implicit Join, Inner Join
+        -- * Implicit Join, Inner Join, SQL/86 standard
         SELECT p.name, pt.name 
         FROM products p, product_types pt 
         WHERE p.product_type_id = pt.product_type 
         ORDER BY p.name;
+
+            -- * SQL/92 standard, sould use this one
+            SELECT p.name, pt.name
+            FROM produces p 
+                INNER JOIN product_types pt 
+                    ON p.product_type_id = pt.product_type_id 
+            ORDER BY p.name;
 
         -- * non-equijoin
         SELECT e.first_name, e.last_name, e.title, e.salary, sg.salary_grade_id 
@@ -191,7 +205,7 @@
         WHERE e.salary BETWEEN sg.low_salary AND sg.hlgh_salary 
         ORDER BY salary_grade_id;
 
-        -- * Outer Joins
+        -- * Outer Joins SQL/86 standard
         SELECT p.name, pt.name
         FROM products p, product_types pt
         WHERE p.product_type_id = pt.product_type_id (+)
@@ -199,12 +213,32 @@
 
         -- * Left outer Joins
         WHERE p.product_type_id = pt.product_type_id (+)
+            -- * SQL/92 standard, sould use this one
+            SELECT p.name, pt.name
+            FROM products p 
+                LEFT OUTER JOIN product_types pt
+                    USING (product_type_id)
+            ORDER BY p.name;
+
         -- * Right outer Joins
         WHERE p.product_type_id (+) = pt.product_type_id 
+            -- * SQL/92 standard, sould use this one
+            SELECT p.name, pt.name
+            FROM products p 
+                RIGHT OUTER JOIN product_types pt
+                    USING (product_type_id)
+            ORDER BY p.name;
         -- Just think opposites for saying which outer join it is 
 
         -- Limitations on Outer Joins
         -- There are limitations when using outer joins. You can only place the Oracle-proprietary outer join operator on one side of the join (not both). If you try to place the outer join operator on both sides, then you get an error. For example:
+
+        -- * Full Outer Join, SQL/92 standard, sould use this one
+        SELECT p.name, pt.name
+        FROM products p 
+            FULL OUTER JOIN product_types pt
+                USING (product_type_id)
+        ORDER BY p.name;
 
         -- * Self Join 
         SELECT w.first_name || ' ' || w.last_name || ' works for' ||
@@ -212,6 +246,11 @@
         FROM employees w, employees m 
         WHERE w.manager_id = m.employee_id 
         ORDER BY w.first_name;
+            -- * SQL/92 standard, sould use this one
+            SELECT w.last_name || ' works for ' || m.last_name
+            FROM employees w 
+                INNER JOIN employees m 
+                    ON w.manager_id = m.employee_id;
 
         -- * Self Outer Jion
         SELECT w.lastname || ' works for ' || 
@@ -219,6 +258,91 @@
         FROM employees w, employees m 
         WHERE w.manager_id = m.employee_id (+) 
         ORDER BY w.last_name;
+
+        -- * USING
+        SELECT p.name, pt.name
+        FROM produces p 
+            INNER JOIN product_types pt 
+                USING (product_type_id);
+        -- CAUTION
+        -- Don’t use a table name or alias when referencing columns used in a USING clause. You’ll get an error if you do.
+
+        -- Other examples of USING
+        SELECT c.first_name, c.last_name, p.name AS PRODUCT, pt.name AS TYPE 
+        FROM customers c 
+            INNER JOIN purchases pr 
+                USING (customer_id)
+            INNER JOIN products p 
+                USING (product_id)
+            INNER JOIN product_types pt 
+                USING (product_type_id)
+        ORDER BY p.name;
+
+        -- USING version of inner join below
+        SELECT ...
+        FROM tablel 
+            INNER JOIN table2 
+                USING (columnl, column2);
+
+  
+            -- Inner Join
+            SELECT ...
+            FROM tablel 
+                INNER JOIN table2
+                    ON table1.columnl = table2.columnl
+                        AND tablel.column2 = table2.column2;
+    
+    -- # Normalization of Database
+        -- ? https://www.studytonight.com/dbms/database-normalization.php
+        -- ? https://trello.com/c/uSUbvkcY/205-normal-forms-nf
+            -- * First Normal Form (1NF)
+            -- For a table to be in the First Normal Form, it should follow the following 4 rules:
+
+            -- It should only have single(atomic) valued attributes/columns.
+            -- Values stored in a column should be of the same domain
+            -- All the columns in a table should have unique names.
+            -- And the order in which data is stored, does not matter.
+            -- In the next tutorial, we will discuss about the First Normal Form in details.
+
+            -- No repeating groups
+            -- PK identified
+            -- All nonkey attributes in the relation are dependent on the primary key. 
+
+            -- * Second Normal Form (2NF)
+            -- For a table to be in the Second Normal Form,
+
+            -- It should be in the First Normal form.
+            -- And, it should not have Partial Dependency.
+            -- To understand what is Partial Dependency and how to normalize a table to 2nd normal for, jump to the Second Normal Form tutorial.
+
+            -- there are no partial dependencies (dependencies in only part of the primary key).
+
+            -- * Third Normal Form (3NF)
+            -- A table is said to be in the Third Normal Form when,
+
+            -- It is in the Second Normal form.
+            -- And, it doesn't have Transitive Dependency.
+            -- Here is the Third Normal Form tutorial. But we suggest you to first study about the second normal form and then head over to the third normal form.
+
+            -- * Boyce and Codd Normal Form (BCNF)
+            -- Boyce and Codd Normal Form is a higher version of the Third Normal form. This form deals with certain type of anomaly that is not handled by 3NF. A 3NF table which does not have multiple overlapping candidate keys is said to be in BCNF. For a table to be in BCNF, following conditions must be satisfied:
+
+            -- R must be in 3rd Normal Form
+            -- and, for each functional dependency ( X → Y ), X should be a super Key.
+            -- To learn about BCNF in detail with a very easy to understand example, head to Boye-Codd Normal Form tutorial.
+
+            -- * Fourth Normal Form (4NF)
+            -- A table is said to be in the Fourth Normal Form when,
+
+            -- It is in the Boyce-Codd Normal Form.
+            -- And, it doesn't have Multi-Valued Dependency.
+            -- Here is the Fourth Normal Form tutorial. But we suggest you to understand other normal forms before you head over to the fourth normal form.
+        -- ? https://www.youtube.com/watch?v=xoTyrdT9SZI&list=PLLGlmW7jT-nTr1ory9o2MgsOmmx2w8FB3
+
+
+
+
+
 
 
 
