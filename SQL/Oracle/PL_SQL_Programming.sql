@@ -27,6 +27,8 @@
         -- You can also specify a variable’s type using the %TYPE keyword, which tells PL/SQL to use the same type as a specified column in a table
         v_product_price products.price%TYPE;
 
+    -- ***PL/SQL Control Statements (good one), IF, ELSIF, ELSE, CASE, Basic LOOP, FOR LOOP, Cursor FOR LOOP, WHILE LOOP, EXIT, EXIT WHEN, CONTINUE, CONTINUE WHEN
+    -- ? https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/plsql-control-statements.html#GUID-18777904-23F6-4F6D-8B41-46BABF00BA03
     -- # Conditional Logic
         IF conditionl THEN 
             statements1
@@ -65,6 +67,28 @@
                 v_counter := v_counter + 1;
                 EXIT WHEN v_counter = 5;
             END LOOP;
+
+            DECLARE
+            s  PLS_INTEGER := 0;
+            i  PLS_INTEGER := 0;
+            j  PLS_INTEGER;
+            BEGIN
+            <<outer_loop>>
+            LOOP
+                i := i + 1;
+                j := 0;
+                <<inner_loop>>
+                LOOP
+                j := j + 1;
+                s := s + i * j; -- Sum several products
+                EXIT inner_loop WHEN (j > 5);
+                EXIT outer_loop WHEN ((i * j) > 15);
+                END LOOP inner_loop;
+            END LOOP outer_loop;
+            DBMS_OUTPUT.PUT_LINE
+                ('The sum of products equals: ' || TO_CHAR(s));
+            END;
+            /
 
         -- * CONTINUE
             -- In Oracle Database 11g and above, you can also end the current iteration of a loop using the CONTINUE or CONTINUE WHEN statement. The CONTINUE statement ends the current iteration of the loop unconditionally and continues with the next iteration. The CONTINUE WHEN statement ends the current iteration of the loop when a specified condition occurs and then continues with the next iteration. The following example shows the use of the CONTINUE statement:
@@ -111,6 +135,24 @@
                 DBMS_OUTPUT.PUT_LINE(v_counter2); 
             END LOOP;
             -- ? https://bookshelf.vitalsource.com/#/books/9780071799362/cfi/6/40!/4/206/2/2@0:54.2
+
+            -- Write a PL/SQL Block that loops through the results of Problem 1 and outputs to the screen department and the count.
+            BEGIN 
+                FOR department IN ( 
+                    SELECT
+                        COUNT(*) AS EmployeeCount,
+                        REGION_NAME,
+                        COUNTRY_NAME,
+                        STATE_PROVINCE,
+                        DEPARTMENT_NAME
+                    FROM
+                        HR.EMP_DETAILS_VIEW
+                    GROUP BY REGION_NAME, COUNTRY_NAME, STATE_PROVINCE, DEPARTMENT_NAME
+                    ORDER BY REGION_NAME, COUNTRY_NAME, STATE_PROVINCE, DEPARTMENT_NAME
+                ) LOOP 
+                    DBMS_OUTPUT.PUT_LINE('Department Name = ' || department.DEPARTMENT_NAME || ', Employee Count = ' || department.EmployeeCount); 
+                END LOOP; 
+            END; 
 
     -- # Cursors
         -- ? https://bookshelf.vitalsource.com/#/books/9780071799362/cfi/6/40!/4/246/2@0:0

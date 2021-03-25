@@ -10,3 +10,6 @@
 
     -- CASE .. WHEN expression in Oracle SQL
     -- ? https://stackoverflow.com/questions/12650875/case-when-expression-in-oracle-sql
+
+    -- **8PL/SQL Control Statements (good one), IF, ELSIF, ELSE, CASE, Basic LOOP, FOR LOOP, Cursor FOR LOOP, WHILE LOOP, EXIT, EXIT WHEN, CONTINUE, CONTINUE WHEN
+    -- ? https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/plsql-control-statements.html#GUID-18777904-23F6-4F6D-8B41-46BABF00BA03
