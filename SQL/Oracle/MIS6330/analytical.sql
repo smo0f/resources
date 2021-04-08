@@ -9,7 +9,6 @@
 
 
 -- @ List every pet adopted, the pet’s name, adopter’s name, pet type, breed, and a number indicating the order of the pet adopted by pet type and breed (i.e. this is the 9th Dog, Labrador Retriever adopted).
-
     -- # simple version
         -- gets information out, but is not searchable nor not as intuitive as one would like.
         DECLARE
@@ -94,10 +93,30 @@
             adoption_description VARCHAR2(100 CHAR) NOT NULL,
             adoption_date DATE NOT NULL,
             adoption_cost NUMBER(6,2) NOT NULL,
-            adoption_cost_difference NUMBER(6,2) NOT NULL,
+            adoption_cost_difference NUMBER(6,2) NOT NULL, 
             adoption_number NUMBER DEFAULT NULL,
             primary key (adoptable_pet_id, adopter_id)
         );
+
+        -- create the max_breed_cost function
+        CREATE OR REPLACE FUNCTION max_breed_cost ( 
+            p_breed IN varchar2 
+        ) RETURN NUMBER AS
+            v_maxCost NUMBER;
+        BEGIN
+            -- get Max cost for breed
+            SELECT MAX(a.ADOPTION_COST)
+            INTO v_maxCost
+            FROM RMOORE.ADOPTIONS a
+                INNER JOIN RMOORE.ADOPTABLEPETS ap
+                    ON ap.ADOPTABLE_PET_ID = a.ADOPTABLE_PET_ID
+                INNER JOIN RMOORE.BREEDS b
+                    ON ap.BREED_ID = b.BREED_ID
+            WHERE LOWER(BREED_NAME) = LOWER(p_breed);
+            
+            -- return data
+            RETURN v_maxCost;
+        END max_breed_cost;
 
         -- procedure to update and populate data
         CREATE OR REPLACE PROCEDURE update_adoption_report1 AS
@@ -105,6 +124,8 @@
             v_typeOfAnimal varchar2(50);
             v_counter Number := 0;
             v_nth varchar2(10);
+            v_maxBreedCost Number;
+            v_breedCostDifference Number;
         BEGIN
             -- truncate AdoptionReport1 table
             EXECUTE IMMEDIATE 'TRUNCATE TABLE RMOORE.AdoptionReport1';
@@ -136,6 +157,8 @@
                     v_counter := 1;
                     v_typeOfAnimal := adoption.TYPE_OF_ANIMAL;
                     v_breed := adoption.BREED_NAME;
+                    -- get max breed cost
+                    v_maxBreedCost := max_breed_cost(v_breed);
                 END IF;
 
                 -- check to see if we need to change the count
@@ -143,6 +166,8 @@
                     v_counter := 1;
                     v_typeOfAnimal := adoption.TYPE_OF_ANIMAL;
                     v_breed := adoption.BREED_NAME;
+                    -- get max breed cost
+                    v_maxBreedCost := max_breed_cost(v_breed);
                 END IF;
 
                 -- get correct number ending
@@ -166,7 +191,8 @@
                     breed_name, 
                     adoption_description, 
                     adoption_date,
-                    adoption_cost
+                    adoption_cost,
+                    adoption_cost_difference 
                 )
                 VALUES (
                     adoption.ADOPTABLE_PET_ID, 
@@ -177,12 +203,13 @@
                     adoption.BREED_NAME,
                     adoption.ADOPTABLE_PET_NAME || ' is the ' || v_nth || ' ' || adoption.TYPE_OF_ANIMAL || '-' || adoption.BREED_NAME || ' adopted from our shelters.',
                     TO_DATE(adoption.ADOPTION_DATE, 'YYYY-MM-DD'),
-                    adoption.ADOPTION_COST
+                    adoption.ADOPTION_COST,
+                    v_maxBreedCost - adoption.ADOPTION_COST
                 );
 
                 -- increment the counter
                 v_counter := v_counter + 1;
-            END LOOP ; 
+            END LOOP; 
 
             -- get records again, update report records by adoption number 1, 2, 3, 4, ...
             v_counter := 0;
@@ -265,8 +292,54 @@
                 ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
         ORDER BY TYPE_OF_ANIMAL, BREED_NAME, ADOPTION_DATE;
 
+        -- Notes for version 3
+            -- break out elements to more of the raw forms
+                -- adoption description, break out the number of that breed adopted
+            -- based off of business logic have that table update periodically
+            -- create table that shows when specific report tables have been updated (may not be necessary)
+            -- adding table and column notes for documentation purposes
+
 
 -- @ For every pet adopted, show the pet’s name, the cost of the adoption, and the difference in cost between this pet and the most expensive pet of that same breed.
+        SELECT 
+            adopted_pet_name,
+            TO_CHAR(adoption_cost, '$99,999.99') AS adoption_cost,
+            TO_CHAR(adoption_cost_difference, '$99,999.99') AS adoption_cost_difference
+        FROM AdoptionReport1;
 
+        -- test my thery
+        SELECT 
+            adopted_pet_name,
+            breed_name,
+            TO_CHAR(adoption_cost, '$99,999.99') AS adoption_cost,
+            TO_CHAR(adoption_cost_difference, '$99,999.99') AS adoption_cost_difference
+        FROM AdoptionReport1
+        WHERE type_of_animal = 'Dog'
+        ORDER BY breed_name, adoption_cost;
 
 -- @ List the total costs received by the organization by pet type and breed. Also show the totals at the pet type level and for all adoptions.
+    -- totals by pet type and breed 
+    SELECT 
+        type_of_animal, 
+        breed_name,
+        TO_CHAR(SUM(adoption_cost), '$99,999.99') AS revenue
+    FROM AdoptionReport1
+    GROUP BY type_of_animal, breed_name
+    ORDER BY type_of_animal, breed_name;
+
+    -- totals at the pet type level 
+    SELECT 
+        type_of_animal,
+        TO_CHAR(SUM(adoption_cost), '$999,999.99') AS revenue
+    FROM AdoptionReport1
+    GROUP BY type_of_animal
+    ORDER BY type_of_animal;
+
+    -- totals all adoptions 
+    SELECT TO_CHAR(SUM(adoption_cost), '$9,999,999.99') AS revenue_for_all_adoptions
+    FROM AdoptionReport1;
+
+    -- cool function 
+
+
+    -- Testing whether or not vaccines are coming in correctly, they should match all the way across
