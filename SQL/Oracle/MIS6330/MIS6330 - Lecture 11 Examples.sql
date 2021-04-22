@@ -103,3 +103,18 @@ select employee_id
 , lead(salary, 1, 0) over (order by salary) - salary as salary_diff
 from hr.employees
 order by salary;
+
+-- Objective: Write a query using a WITH statement that shows for each listing the difference between the average price per square foot of all listings compared to this listing.
+WITH LISTINGS_AVG_PRICE AS (
+    SELECT 
+        MLS_NUMBER,
+        PRICE_PER_SQ_FT,
+        AVG(PRICE_PER_SQ_FT) OVER () AS AVG_PRICE_OF_LISTINGS
+    FROM RMOORE.REDFIN_PROPERTIES
+)
+SELECT 
+    MLS_NUMBER,
+    PRICE_PER_SQ_FT,
+    AVG_PRICE_OF_LISTINGS,
+    PRICE_PER_SQ_FT - AVG_PRICE_OF_LISTINGS AS PRICE_DIFFERENCE
+FROM LISTINGS_AVG_PRICE;

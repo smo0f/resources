@@ -339,7 +339,252 @@
     SELECT TO_CHAR(SUM(adoption_cost), '$9,999,999.99') AS revenue_for_all_adoptions
     FROM AdoptionReport1;
 
-    -- cool function 
 
 
-    -- Testing whether or not vaccines are coming in correctly, they should match all the way across
+
+
+
+
+
+
+
+
+
+
+
+
+-- @ new way
+-- # List every pet adopted, the pet’s name, adopter’s name, pet type, breed, and a number indicating the order of the pet adopted by pet type and breed (i.e. this is the 9th Dog, Labrador Retriever adopted.
+    SELECT
+        ADOPTABLE_PET_NAME,
+        ADOPTERS_FIRST_NAME || ' ' || ADOPTERS_LAST_NAME AS ADOPTERS_NAME,
+        TYPE_OF_ANIMAL,
+        BREED_NAME,
+        LOCATION_NAME,
+        RANK() OVER (PARTITION BY TYPE_OF_ANIMAL, BREED_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED,
+        RANK() OVER (ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_DATE,
+        RANK() OVER (PARTITION BY LOCATION_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_LOCATION,
+        ADOPTION_DATE
+    FROM RMOORE.ADOPTIONS a
+        INNER JOIN RMOORE.ADOPTABLEPETS ap
+            ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+        INNER JOIN RMOORE.ADOPTERS ad
+            ON a.ADOPTER_ID = ad.ADOPTER_ID
+        INNER JOIN RMOORE.BREEDS b
+            ON ap.BREED_ID = b.BREED_ID
+        INNER JOIN RMOORE.TYPEOFANIMALS toa
+            ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+        INNER JOIN RMOORE.LOCATIONS l
+            ON a.LOCATION_ID = l.LOCATION_ID
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME, ADOPTION_DATE;
+
+    -- more refined/specific to the question
+    WITH ANIMAL_REPORT AS (
+        SELECT
+            ADOPTABLE_PET_NAME,
+            ADOPTERS_FIRST_NAME || ' ' || ADOPTERS_LAST_NAME AS ADOPTERS_NAME,
+            TYPE_OF_ANIMAL,
+            BREED_NAME,
+            LOCATION_NAME,
+            RANK() OVER (PARTITION BY TYPE_OF_ANIMAL, BREED_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED,
+            RANK() OVER (ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_DATE,
+            RANK() OVER (PARTITION BY LOCATION_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_LOCATION,
+            ADOPTION_DATE
+        FROM RMOORE.ADOPTIONS a
+            INNER JOIN RMOORE.ADOPTABLEPETS ap
+                ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+            INNER JOIN RMOORE.ADOPTERS ad
+                ON a.ADOPTER_ID = ad.ADOPTER_ID
+            INNER JOIN RMOORE.BREEDS b
+                ON ap.BREED_ID = b.BREED_ID
+            INNER JOIN RMOORE.TYPEOFANIMALS toa
+                ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+            INNER JOIN RMOORE.LOCATIONS l
+                ON a.LOCATION_ID = l.LOCATION_ID
+    )
+    SELECT 
+        ADOPTABLE_PET_NAME,
+        ADOPTERS_NAME,
+        TYPE_OF_ANIMAL,
+        BREED_NAME,
+        CASE
+            WHEN SUBSTR(TO_CHAR(ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED), -1) = '1' AND ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED <> 11 THEN 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'st ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+            WHEN SUBSTR(TO_CHAR(ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED), -1) = '2' AND ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED <> 12 THEN 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'nd ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+            WHEN SUBSTR(TO_CHAR(ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED), -1) = '3' AND ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED <> 13 THEN 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'rd ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+            ELSE 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'th ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+        END AS ADOPTION_DESCRIPTION 
+    FROM ANIMAL_REPORT
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME, ADOPTION_DATE;
+
+-- # For every pet adopted, show the pet’s name, the cost of the adoption, and the difference in cost between this pet and the most expensive pet of that same breed.
+    WITH ANIMAL_REPORT AS (
+        SELECT
+            ADOPTABLE_PET_NAME,
+            ADOPTERS_FIRST_NAME || ' ' || ADOPTERS_LAST_NAME AS ADOPTERS_NAME,
+            TYPE_OF_ANIMAL,
+            BREED_NAME,
+            LOCATION_NAME,
+            RANK() OVER (PARTITION BY TYPE_OF_ANIMAL, BREED_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED,
+            RANK() OVER (ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_DATE,
+            RANK() OVER (PARTITION BY LOCATION_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_LOCATION,
+            ADOPTION_DATE,
+            ADOPTION_COST,
+            MAX(ADOPTION_COST) OVER (PARTITION BY b.BREED_ID) AS MAX_COST_BREED
+        FROM RMOORE.ADOPTIONS a
+            INNER JOIN RMOORE.ADOPTABLEPETS ap
+                ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+            INNER JOIN RMOORE.ADOPTERS ad
+                ON a.ADOPTER_ID = ad.ADOPTER_ID
+            INNER JOIN RMOORE.BREEDS b
+                ON ap.BREED_ID = b.BREED_ID
+            INNER JOIN RMOORE.TYPEOFANIMALS toa
+                ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+            INNER JOIN RMOORE.LOCATIONS l
+                ON a.LOCATION_ID = l.LOCATION_ID
+    )
+    SELECT 
+        ADOPTABLE_PET_NAME,
+        BREED_NAME,
+        ADOPTION_COST,
+        MAX_COST_BREED,
+        MAX_COST_BREED - ADOPTION_COST AS DIFFERENCE_IN_COST
+    FROM ANIMAL_REPORT
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME, ADOPTION_COST;
+
+
+
+-- # List the total costs received by the organization by pet type and breed. Also show the totals at the pet type level and for all adoptions.
+    WITH ANIMAL_REPORT AS (
+        SELECT
+            TYPE_OF_ANIMAL,
+            BREED_NAME,
+            LOCATION_NAME,
+            RANK() OVER (PARTITION BY TYPE_OF_ANIMAL, BREED_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED,
+            RANK() OVER (ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_DATE,
+            RANK() OVER (PARTITION BY LOCATION_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_LOCATION,
+            ADOPTION_DATE,
+            ADOPTION_COST,
+            MAX(ADOPTION_COST) OVER (PARTITION BY b.BREED_ID) AS MAX_COST_BREED,
+            SUM(ADOPTION_COST) OVER (PARTITION BY toa.TYPE_OF_ANIMAL_ID, b.BREED_ID) AS TOTAL_COST_ANIMAL_TYPE_BREED,
+            SUM(ADOPTION_COST) OVER (PARTITION BY toa.TYPE_OF_ANIMAL_ID) AS TOTAL_COST_ANIMAL_TYPE,
+            SUM(ADOPTION_COST) OVER () AS TOTAL_COST_ALL_LOCATIONS
+        FROM RMOORE.ADOPTIONS a
+            INNER JOIN RMOORE.ADOPTABLEPETS ap
+                ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+            INNER JOIN RMOORE.ADOPTERS ad
+                ON a.ADOPTER_ID = ad.ADOPTER_ID
+            INNER JOIN RMOORE.BREEDS b
+                ON ap.BREED_ID = b.BREED_ID
+            INNER JOIN RMOORE.TYPEOFANIMALS toa
+                ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+            INNER JOIN RMOORE.LOCATIONS l
+                ON a.LOCATION_ID = l.LOCATION_ID
+    )
+    SELECT 
+        TYPE_OF_ANIMAL,
+        BREED_NAME,
+        TOTAL_COST_ANIMAL_TYPE_BREED,
+        TOTAL_COST_ANIMAL_TYPE,
+        TOTAL_COST_ALL_LOCATIONS
+    FROM ANIMAL_REPORT
+    GROUP BY TYPE_OF_ANIMAL, BREED_NAME, TOTAL_COST_ANIMAL_TYPE_BREED, TOTAL_COST_ANIMAL_TYPE, TOTAL_COST_ALL_LOCATIONS
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME;
+
+
+
+
+
+
+
+
+-- @ new way Final
+-- # List every pet adopted, the pet’s name, adopter’s name, pet type, breed, and a number indicating the order of the pet adopted by pet type and breed (i.e. this is the 9th Dog, Labrador Retriever adopted.
+    WITH ANIMAL_REPORT AS (
+        SELECT
+            ADOPTABLE_PET_NAME,
+            ADOPTERS_FIRST_NAME || ' ' || ADOPTERS_LAST_NAME AS ADOPTERS_NAME,
+            TYPE_OF_ANIMAL,
+            BREED_NAME,
+            RANK() OVER (PARTITION BY TYPE_OF_ANIMAL, BREED_NAME ORDER BY ADOPTION_DATE) AS ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED
+        FROM RMOORE.ADOPTIONS a
+            INNER JOIN RMOORE.ADOPTABLEPETS ap
+                ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+            INNER JOIN RMOORE.ADOPTERS ad
+                ON a.ADOPTER_ID = ad.ADOPTER_ID
+            INNER JOIN RMOORE.BREEDS b
+                ON ap.BREED_ID = b.BREED_ID
+            INNER JOIN RMOORE.TYPEOFANIMALS toa
+                ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+    )
+    SELECT 
+        ADOPTABLE_PET_NAME,
+        ADOPTERS_NAME,
+        TYPE_OF_ANIMAL,
+        BREED_NAME,
+        CASE
+            WHEN SUBSTR(TO_CHAR(ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED), -1) = '1' AND ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED <> 11 THEN 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'st ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+            WHEN SUBSTR(TO_CHAR(ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED), -1) = '2' AND ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED <> 12 THEN 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'nd ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+            WHEN SUBSTR(TO_CHAR(ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED), -1) = '3' AND ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED <> 13 THEN 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'rd ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+            ELSE 
+                ADOPTABLE_PET_NAME || ' is the ' || ADOPTION_ORDER_BY_ANIMAL_TYPE_BREED || 'th ' || TYPE_OF_ANIMAL || '-' || BREED_NAME || ' adopted from all our shelters.'
+        END AS ADOPTION_DESCRIPTION 
+    FROM ANIMAL_REPORT
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME;
+
+-- # For every pet adopted, show the pet’s name, the cost of the adoption, and the difference in cost between this pet and the most expensive pet of that same breed.
+    WITH ANIMAL_REPORT AS (
+        SELECT
+            ADOPTABLE_PET_NAME,
+            TYPE_OF_ANIMAL,
+            BREED_NAME,
+            ADOPTION_COST,
+            MAX(ADOPTION_COST) OVER (PARTITION BY b.BREED_ID) AS MAX_COST_BREED
+        FROM RMOORE.ADOPTIONS a
+            INNER JOIN RMOORE.ADOPTABLEPETS ap
+                ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+            INNER JOIN RMOORE.BREEDS b
+                ON ap.BREED_ID = b.BREED_ID
+            INNER JOIN RMOORE.TYPEOFANIMALS toa
+                ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+    )
+    SELECT 
+        ADOPTABLE_PET_NAME,
+        BREED_NAME,
+        ADOPTION_COST,
+        MAX_COST_BREED,
+        MAX_COST_BREED - ADOPTION_COST AS DIFFERENCE_IN_COST
+    FROM ANIMAL_REPORT
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME, ADOPTION_COST;
+
+-- # List the total costs received by the organization by pet type and breed. Also show the totals at the pet type level and for all adoptions.
+    WITH ANIMAL_REPORT AS (
+        SELECT
+            TYPE_OF_ANIMAL,
+            BREED_NAME,
+            SUM(ADOPTION_COST) OVER (PARTITION BY toa.TYPE_OF_ANIMAL_ID, b.BREED_ID) AS TOTAL_COST_ANIMAL_TYPE_BREED,
+            SUM(ADOPTION_COST) OVER (PARTITION BY toa.TYPE_OF_ANIMAL_ID) AS TOTAL_COST_ANIMAL_TYPE,
+            SUM(ADOPTION_COST) OVER () AS TOTAL_COST_ALL_LOCATIONS
+        FROM RMOORE.ADOPTIONS a
+            INNER JOIN RMOORE.ADOPTABLEPETS ap
+                ON a.ADOPTABLE_PET_ID = ap.ADOPTABLE_PET_ID
+            INNER JOIN RMOORE.BREEDS b
+                ON ap.BREED_ID = b.BREED_ID
+            INNER JOIN RMOORE.TYPEOFANIMALS toa
+                ON b.TYPE_OF_ANIMAL_ID = toa.TYPE_OF_ANIMAL_ID
+    )
+    SELECT 
+        TYPE_OF_ANIMAL,
+        BREED_NAME,
+        TOTAL_COST_ANIMAL_TYPE_BREED,
+        TOTAL_COST_ANIMAL_TYPE,
+        TOTAL_COST_ALL_LOCATIONS
+    FROM ANIMAL_REPORT
+    GROUP BY TYPE_OF_ANIMAL, BREED_NAME, TOTAL_COST_ANIMAL_TYPE_BREED, TOTAL_COST_ANIMAL_TYPE, TOTAL_COST_ALL_LOCATIONS
+    ORDER BY TYPE_OF_ANIMAL, BREED_NAME;

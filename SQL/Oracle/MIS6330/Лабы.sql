@@ -357,55 +357,99 @@ DROP TABLE employees;
     REVOKE ALL ON RMOORE.LAB8_RUSSELL FROM choiland; 
 
 
+
+
+
+
+
+
+
+
 -- @ Лаб 10
 
 /* MIS6330 Lab 10
 WITH, Subqueries, and Set Operations
 */
-
---Exercise 1
+-- Exercise 1
 -- Using the tables created in the lecture, display the first name and last name of all people who 
 -- are members but not contacts
-SELECT
-    FIRST_NAME,
-    LAST_NAME
-FROM
-    MEMBERS
-WHERE
-    EMAIL_ADDRESS IN (
-        SELECT EMAIL_ADDRESS
-        FROM MEMBERS
-        MINUS
+    SELECT
+        FIRST_NAME,
+        LAST_NAME
+    FROM
+        MEMBERS
+    WHERE EMAIL_ADDRESS NOT IN (
         SELECT EMAIL
         FROM CONTACTS
-    )
-;
+        WHERE EMAIL IS NOT NULL
+    );
+
+    -- or
+
+    SELECT
+        FIRST_NAME,
+        LAST_NAME
+    FROM
+        MEMBERS
+    WHERE
+        EMAIL_ADDRESS IN (
+            SELECT EMAIL_ADDRESS
+            FROM MEMBERS
+            MINUS
+            SELECT EMAIL
+            FROM CONTACTS
+        )
+    ;
 
 
---Exercise 2
+
+-- Exercise 2
 -- Using the HR.EMPLOYEES table, find all employees who make (SALARY) less than all of the people with 
 -- FI_ACCOUNT job_ids
-SELECT
-    EMPLOYEE_ID,
-    FIRST_NAME,
-    LAST_NAME,
-    SALARY
-FROM
-    HR.EMPLOYEES
-WHERE SALARY < ALL (
-        SELECT SALARY
-        FROM HR.EMPLOYEES
-        WHERE JOB_ID = 'FI_ACCOUNT'
-    )
-;
+    SELECT
+        EMPLOYEE_ID,
+        FIRST_NAME,
+        LAST_NAME,
+        SALARY
+    FROM
+        HR.EMPLOYEES
+    WHERE SALARY < ALL (
+            SELECT SALARY
+            FROM HR.EMPLOYEES
+            WHERE JOB_ID = 'FI_ACCOUNT'
+        )
+    ;
 
 
 
---Exercise 3
+-- Exercise 3
 -- Use a WITH statement to averge the salaries by job_id in the HR.EMPLOYEES 
 -- table. Then display each employee's last name, individual salary, and 
 -- job salary total. Filter where salary is greater then the average for that job.
-
+    WITH AVERAGE_SALARY_BY_JOB_ID AS (
+        SELECT 
+            AVG(SALARY) AS JOB_AVERAGE_SALARY, 
+            JOB_ID
+        FROM HR.EMPLOYEES
+        GROUP BY JOB_ID
+    ), SALARY_TOTAL_BY_JOB_ID AS (
+        SELECT 
+            SUM(SALARY) AS JOB_SALARY_TOTAL, 
+            JOB_ID
+        FROM HR.EMPLOYEES
+        GROUP BY JOB_ID
+    )
+    SELECT 
+        e.LAST_NAME,
+        e.SALARY,
+        s.JOB_SALARY_TOTAL
+    FROM HR.EMPLOYEES e
+        INNER JOIN SALARY_TOTAL_BY_JOB_ID s
+            ON e.JOB_ID = s.JOB_ID
+        INNER JOIN AVERAGE_SALARY_BY_JOB_ID a
+            ON e.JOB_ID = a.JOB_ID
+    WHERE e.SALARY > a.JOB_AVERAGE_SALARY
+    ORDER BY e.JOB_ID;
 
 
 
@@ -414,10 +458,8 @@ WHERE SALARY < ALL (
 -- @ Лаб 11
 /* MIS6330 Lab 11 */
 /* Analytic Functions */
-
---This lab uses the MIS6330_DATASETS.MMS table. This table lists m&m candy data. 
+--This lab uses the CLASS_DATASETS.MMS table. This table lists m&m candy data. 
 --  It has 4 columns: MM_ID, COLOR, CANDY_TYPE, QUANTITY
-
 
 --Problem 1
 -- Select all columns and rows from the MMS table. Add a column to the end of the output showing the 
@@ -446,10 +488,12 @@ WHERE SALARY < ALL (
         SUM(QUANTITY) OVER (PARTITION BY COLOR ORDER BY COLOR) AS TOTAL_MMS_BY_COLOR
     FROM CLASS_DATASETS.MMS;
     
-    -- TODO: validate
+    -- validate
     SELECT
-        SUM(QUANTITY) AS TOTAL_MMS
-    FROM CLASS_DATASETS.MMS;
+        COLOR,
+        SUM(QUANTITY) AS TOTAL_MMS_BY_COLOR
+    FROM CLASS_DATASETS.MMS
+    GROUP BY COLOR;
 
 --Problem 3
 -- Modify your query from problem 2 to show a rolling sum instead of the total sum for each color.
@@ -459,7 +503,7 @@ WHERE SALARY < ALL (
         COLOR, 
         CANDY_TYPE, 
         QUANTITY,
-        SUM(QUANTITY) OVER (PARTITION BY COLOR ORDER BY COLOR ROWS UNBOUNDED PRECEDING) AS TOTAL_MMS_BY_COLOR
+        SUM(QUANTITY) OVER (PARTITION BY COLOR ORDER BY COLOR ROWS UNBOUNDED PRECEDING) AS ROLLING_SUM_BY_COLOR
     FROM CLASS_DATASETS.MMS;
 
 --Problem 4
@@ -471,12 +515,13 @@ WHERE SALARY < ALL (
         CANDY_TYPE, 
         QUANTITY,
         DENSE_RANK() OVER (PARTITION BY CANDY_TYPE ORDER BY QUANTITY) AS RANK_CANDY_TYPE
-    FROM CLASS_DATASETS.MMS;
+    FROM CLASS_DATASETS.MMS
+    ORDER BY CANDY_TYPE;
  
 
 --Problem 5
 -- Modify your query from Problem 4 to only display the rows that rank #1.
-    WITH candy AS (
+    WITH RANK_CANDY_BY_QUANTITY AS (
         SELECT 
             MM_ID, 
             COLOR, 
@@ -485,43 +530,34 @@ WHERE SALARY < ALL (
             DENSE_RANK() OVER (PARTITION BY CANDY_TYPE ORDER BY QUANTITY) AS RANK_CANDY_TYPE
         FROM CLASS_DATASETS.MMS
     )
-
     SELECT 
         MM_ID, 
         COLOR, 
         CANDY_TYPE, 
         QUANTITY,
         RANK_CANDY_TYPE
-    FROM candy
-    WHERE RANK_CANDY_TYPE = 1;
+    FROM RANK_CANDY_BY_QUANTITY
+    WHERE RANK_CANDY_TYPE = 1
+    ORDER BY CANDY_TYPE, COLOR;
  
 
 --Problem 6
 -- Modify your query from Problem 4 so that any ties cause the next rank number to be skipped.
-    WITH candy AS (
-        SELECT 
-            MM_ID, 
-            COLOR, 
-            CANDY_TYPE, 
-            QUANTITY,
-            RANK() OVER (PARTITION BY CANDY_TYPE ORDER BY QUANTITY) AS RANK_CANDY_TYPE
-        FROM CLASS_DATASETS.MMS
-    )
-
     SELECT 
         MM_ID, 
         COLOR, 
         CANDY_TYPE, 
         QUANTITY,
-        RANK_CANDY_TYPE
-    FROM candy
-    WHERE RANK_CANDY_TYPE = 1;
+        RANK() OVER (PARTITION BY CANDY_TYPE ORDER BY QUANTITY) AS RANK_CANDY_TYPE
+    FROM CLASS_DATASETS.MMS
+    ORDER BY CANDY_TYPE;
+    
  
 
 --Problem 7
 -- Modify your query from Problem 4 to add another column that displays the color of the candy
 --  with the highest quantity for each candy_type. Call this column the top_color.
-    WITH candy AS (
+    WITH RANK_CANDY_BY_QUANTITY AS (
         SELECT 
             MM_ID, 
             COLOR, 
@@ -538,7 +574,7 @@ WHERE SALARY < ALL (
         QUANTITY,
         MMS_RANK,
         TOP_COLOR
-    FROM candy
+    FROM RANK_CANDY_BY_QUANTITY
     ORDER BY CANDY_TYPE, QUANTITY DESC;
 
  
@@ -546,55 +582,232 @@ WHERE SALARY < ALL (
 --Problem 8
 -- Display all of the columns & rows from the MMS table. Add a column to show the quantity of 
 --  the row prior, within the same color ordered by candy_type. Call this column previous_quantity.
-    
-    
-    
-    
-    
-    -- ???
-    -- SELECT     
-    --     MM_ID, 
-    --     COLOR, 
-    --     CANDY_TYPE, 
-    --     QUANTITY, 
-    --     lag(quantity, 1, NULL) over (partition by color order by candy_type) as previous_quantity
-    -- FROM CLASS_DATASETS.MMS;
-
+    SELECT 
+        MM_ID, 
+        COLOR, 
+        CANDY_TYPE, 
+        QUANTITY,
+        LAG(QUANTITY, 1, 0) OVER (PARTITION BY COLOR ORDER BY CANDY_TYPE) AS PREVIOUS_QUANTITY
+    FROM CLASS_DATASETS.MMS;
+ 
  
 
 --Problem 9
 -- Modify your query from Problem 8 to add a column that displays the difference between the previous
 --   row's quantity and the current row's quantity.
-    
-    
-    
-    
-    
-    
-    -- ??? 
-    -- SELECT     
-    --     MM_ID, 
-    --     COLOR, 
-    --     CANDY_TYPE, 
-    --     QUANTITY, 
-    --     lag(quantity, 1, NULL) over (partition by color order by candy_type) as previous_quantity,
-    --     quantity - lag(quantity, 1, NULL) over (partition by color order by candy_type) as previous_quantity_diff
-    -- FROM CLASS_DATASETS.MMS;
+    SELECT 
+        MM_ID, 
+        COLOR, 
+        CANDY_TYPE, 
+        QUANTITY,
+        LAG(QUANTITY, 1, 0) OVER (PARTITION BY COLOR ORDER BY CANDY_TYPE) AS PREVIOUS_QUANTITY,
+        QUANTITY - LAG(QUANTITY, 1, 0) over (PARTITION BY COLOR ORDER BY CANDY_TYPE) AS QUANTITY_DIFFERENCE
+    FROM CLASS_DATASETS.MMS;
 
  
 
 --Problem 10
 -- Display all of the columns & rows from the MMS table. Add a column that displays the percentage
 --  of the total quantity each row is compared to the candy_type. Call this column PERCENT_OF_TOTAL_TYPE.
+    SELECT 
+        MM_ID, 
+        COLOR, 
+        CANDY_TYPE, 
+        QUANTITY,
+        ROUND(RATIO_TO_REPORT(QUANTITY) over (partition by CANDY_TYPE) * 100, 1) AS PERCENT_OF_TOTAL_TYPE
+    FROM CLASS_DATASETS.MMS;
 
 
 
+-- @ Лаб 13
+/* Problem 1
+What day of the week was the day after Jan 1, 2000? Use the next_day function to find the day after Jan 1, 2000.
+*/
+    SELECT TO_CHAR(NEXT_DAY(TO_DATE('Jan 1, 2000', 'MON DD, YYYY'), + 1), 'DAY')
+    FROM dual;
 
-    -- ???
-    -- SELECT     
-    --     MM_ID, 
-    --     COLOR, 
-    --     CANDY_TYPE, 
-    --     QUANTITY,
-    --     round(ratio_to_report(quantity) over (partition by candy_type) * 100, 1) AS PERCENT_OF_TOTAL_TYPE
-    -- FROM CLASS_DATASETS.MMS;
+/* Problem 2
+Using rollup, show the number of employees that report to each manager.
+*/
+    SELECT e.MANAGER_ID, COUNT(e.EMPLOYEE_ID)
+    FROM HR.EMPLOYEES e
+    GROUP BY ROLLUP(e.MANAGER_ID);
+
+    -- verify 
+    SELECT
+        COUNT(MANAGER_ID)
+    FROM
+        HR.EMPLOYEES
+    WHERE MANAGER_ID = 100;
+
+    SELECT
+        COUNT(MANAGER_ID)
+    FROM
+        HR.EMPLOYEES
+    WHERE MANAGER_ID = 101;
+
+    -- more resorses 
+    -- ? https://docs.oracle.com/en/database/oracle/oracle-database/19/dwhsg/sql-aggregation-data-warehouses.html#GUID-BBC76574-0B15-46CB-B989-2F9E0230CD16
+
+/* Problem 3
+Return a dataset that includes each department name and a list of the job titles in that department, as a comma separated list
+You'll use the Departments, Jobs and Employees tables for this query
+*/
+    -- answer
+    WITH dep AS (
+        SELECT
+            DISTINCT j.JOB_TITLE,
+            e.JOB_ID,
+            e.DEPARTMENT_ID,
+            d.DEPARTMENT_NAME
+        FROM HR.EMPLOYEES e
+            INNER JOIN HR.DEPARTMENTS d
+                ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+            INNER JOIN HR.JOBS j
+                ON e.JOB_ID = j.JOB_ID
+    )
+    SELECT 
+        DEPARTMENT_NAME, 
+        LISTAGG(JOB_TITLE, ', ') WITHIN GROUP (ORDER BY JOB_TITLE) as JOB_TITLES_IN_DEPARTMENT
+    FROM dep
+    group by DEPARTMENT_NAME
+    ORDER BY DEPARTMENT_NAME;
+
+    -- all others are just work process
+        -- first one, had lots of duplicates
+        SELECT 
+            d.DEPARTMENT_NAME, 
+            LISTAGG(j.JOB_TITLE, ', ') WITHIN GROUP (ORDER BY j.JOB_TITLE) as JOB_TITLES_IN_DEPARTMENT
+        FROM HR.EMPLOYEES e
+            INNER JOIN HR.DEPARTMENTS d
+                ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+            INNER JOIN HR.JOBS j
+                ON e.JOB_ID = j.JOB_ID
+        group by d.DEPARTMENT_NAME
+        ORDER BY d.DEPARTMENT_NAME;
+        
+        -- verify
+            -- duplicate files
+            SELECT
+                e.JOB_ID,
+                e.DEPARTMENT_ID,
+                d.DEPARTMENT_NAME,
+                j.JOB_TITLE
+            FROM HR.EMPLOYEES e
+                INNER JOIN HR.DEPARTMENTS d
+                    ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+                INNER JOIN HR.JOBS j
+                    ON e.JOB_ID = j.JOB_ID
+            ORDER BY d.DEPARTMENT_NAME;
+
+            -- distinct
+            SELECT
+                DISTINCT j.JOB_TITLE,
+                e.JOB_ID,
+                e.DEPARTMENT_ID,
+                d.DEPARTMENT_NAME
+            FROM HR.EMPLOYEES e
+                INNER JOIN HR.DEPARTMENTS d
+                    ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+                INNER JOIN HR.JOBS j
+                    ON e.JOB_ID = j.JOB_ID
+            ORDER BY d.DEPARTMENT_NAME;
+
+            -- distinct + count 
+            SELECT
+                DISTINCT j.JOB_TITLE,
+                e.JOB_ID,
+                e.DEPARTMENT_ID,
+                d.DEPARTMENT_NAME,
+                COUNT(j.JOB_TITLE) AS DUPLICATE_COUNT 
+            FROM HR.EMPLOYEES e
+                INNER JOIN HR.DEPARTMENTS d
+                    ON e.DEPARTMENT_ID = d.DEPARTMENT_ID
+                INNER JOIN HR.JOBS j
+                    ON e.JOB_ID = j.JOB_ID
+            GROUP BY e.DEPARTMENT_ID, e.JOB_ID, d.DEPARTMENT_NAME, j.JOB_TITLE
+            ORDER BY d.DEPARTMENT_NAME;
+
+/* Problem 4
+Explore the summary stats of the PRICE column in the CLASS_DATASETS.PARK_CITY_REAL_ESTATE table.
+*/
+
+SET SERVEROUTPUT ON;
+DECLARE
+sigma number := 3;
+S DBMS_STAT_FUNCS.summaryType;
+item number;
+cnt number;
+BEGIN
+DBMS_STAT_FUNCS.SUMMARY ('CLASS_DATASETS', 'PARK_CITY_REAL_ESTATE', 'PRICE', sigma, S);
+DBMS_OUTPUT.PUT_LINE('COUNT = ' || S.count);
+DBMS_OUTPUT.PUT_LINE('MIN = ' || S.min);
+DBMS_OUTPUT.PUT_LINE('MAX = ' || S.max);
+DBMS_OUTPUT.PUT_LINE('RANGE = ' || S.range);
+DBMS_OUTPUT.PUT_LINE('VARIANCE = ' || S.variance);
+DBMS_OUTPUT.PUT_LINE('STDDEV = ' || S.stddev);
+DBMS_OUTPUT.PUT_LINE('5th QUANTILE = ' || S.quantile_5);
+DBMS_OUTPUT.PUT_LINE('25th QUANTILE = ' || S.quantile_25);
+DBMS_OUTPUT.PUT_LINE('MEDIAN = ' || S.median);
+DBMS_OUTPUT.PUT_LINE('75th QUANTILE = ' || S.quantile_75);
+DBMS_OUTPUT.PUT_LINE('95th QUANTILE = ' || S.quantile_95);
+DBMS_OUTPUT.PUT_LINE('PLUS X SIGMA = ' || S.plus_x_sigma);
+DBMS_OUTPUT.PUT_LINE('MINUS X SIGMA = ' || S.minus_x_sigma);
+
+FOR item IN S.cmode.FIRST..S.cmode.LAST
+LOOP
+DBMS_OUTPUT.PUT_LINE('MODE [' || item || '] = ' || S.cmode(item));
+END LOOP;
+
+FOR item IN S.top_5_values.FIRST..S.top_5_values.LAST
+LOOP
+DBMS_OUTPUT.PUT_LINE('TOP ' || item || ' VALUE = ' || S.top_5_values(item));
+END LOOP;
+
+cnt := S.bottom_5_values.LAST;
+FOR item IN S.bottom_5_values.FIRST..S.bottom_5_values.LAST
+LOOP
+DBMS_OUTPUT.PUT_LINE('BOTTOM ' || cnt || ' VALUE = ' || S.bottom_5_values(item));
+cnt := cnt - 1;
+END LOOP;
+
+END;
+/
+
+
+-- @ Лаб 14
+--Problem 1
+-- Using the ALL_TAB_COLUMNS table, display all of the columns in the HR.EMPLOYEES table
+    SELECT *
+    FROM ALL_TAB_COLUMNS
+    WHERE OWNER = 'HR'
+        AND TABLE_NAME = 'EMPLOYEES';
+
+--Problem 2
+-- Compare the results of the ALL_TABLES view to the USER_TABLES view. What tables
+--  are in ALL_TABLES that are not in USER_TABLES?
+    SELECT TABLE_NAME
+    FROM ALL_TABLES
+    MINUS
+    SELECT TABLE_NAME
+    FROM USER_TABLES;
+
+
+-- @ Лаб 15
+--Problem 1
+--Using PIVOT, show how many customers are at each income level for each state. Only show the states of UT, CA, NY, and WA. 
+--The columns displayed in your query should be CUST_INCOME_LEVEL, UT, CA, NY, WA. I've started your query for you below.
+SELECT * FROM (
+   SELECT cust_income_level
+   , cust_state_province
+   FROM sh.customers c
+)
+pivot (
+    count(*) FOR cust_state_province IN (
+        'UT' AS UT, 
+        'CA' AS CA, 
+        'NY' AS NY, 
+        'WA' AS WA)
+)
+ORDER BY cust_income_level;
+
