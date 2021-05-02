@@ -588,3 +588,97 @@
     FROM ANIMAL_REPORT
     GROUP BY TYPE_OF_ANIMAL, BREED_NAME, TOTAL_COST_ANIMAL_TYPE_BREED, TOTAL_COST_ANIMAL_TYPE, TOTAL_COST_ALL_LOCATIONS
     ORDER BY TYPE_OF_ANIMAL, BREED_NAME;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- add partition breed_name
+-- minus INNER JOIN PetStatus pt
+-- WHERE pet_status = 'Adopted'
+-- query one conner
+SELECT pet_status, adoptable_pet_name as PetName, adopters_first_name ||' '|| adopters_last_name as Adopters_Name, 
+ type_of_animal, breed_name , dense_rank() over (partition by type_of_animal order by adoption_date asc) as AdoptionRank
+FROM adoptablepets ap
+INNER JOIN adoptions ad
+    ON ap.adoptable_pet_id = ad.adoptable_pet_id
+INNER JOIN  breeds bd
+    ON bd.breed_id = ap.breed_id
+INNER JOIN adopters adt
+    ON adt.adopter_id = ad.adopter_id
+INNER JOIN TypeOfAnimals toa
+    on bd.type_of_animal_id = toa.type_of_animal_id
+INNER JOIN PetStatus pt
+    on pt.pet_status_id = ap.pet_status_id
+WHERE pet_status = 'Adopted'
+ORDER BY type_of_animal;
+
+SELECT
+    ADOPTABLE_PET_NAME AS PETNAME,
+    ADOPTERS_FIRST_NAME || ' ' || ADOPTERS_LAST_NAME AS ADOPTERS_NAME,
+    TYPE_OF_ANIMAL,
+    BREED_NAME,
+    DENSE_RANK() OVER(PARTITION BY BD.BREED_ID ORDER BY ADOPTION_DATE ASC) AS ANIMALADOPTIONRANK
+FROM
+    ADOPTABLEPETS AP
+    INNER JOIN ADOPTIONS AD 
+        ON AP.ADOPTABLE_PET_ID = AD.ADOPTABLE_PET_ID
+    INNER JOIN BREEDS BD 
+        ON BD.BREED_ID = AP.BREED_ID
+    INNER JOIN ADOPTERS ADT 
+        ON ADT.ADOPTER_ID = AD.ADOPTER_ID
+    INNER JOIN TYPEOFANIMALS TOA 
+        ON BD.TYPE_OF_ANIMAL_ID = TOA.TYPE_OF_ANIMAL_ID
+ORDER BY TYPE_OF_ANIMAL, BREED_NAME, ADOPTION_DATE;
+
+
+
+
+-- Brie
+WITH ADOPTION_INFO AS (
+    SELECT
+        B.ADOPTABLE_PET_NAME,
+        C.ADOPTION_COST,
+        A.BREED_NAME,
+        MAX(C.ADOPTION_COST) OVER (PARTITION BY A.BREED_ID) AS MAX_ADOPTION_COST
+    FROM BREEDS A
+        INNER JOIN ADOPTABLEPETS B 
+            ON A.BREED_ID = B.BREED_ID
+        INNER JOIN ADOPTIONS C 
+            ON C.ADOPTABLE_PET_ID = B.ADOPTABLE_PET_ID
+)
+SELECT
+    ADOPTABLE_PET_NAME,
+    BREED_NAME,
+    ADOPTION_COST,
+    MAX_ADOPTION_COST,
+    ( MAX_ADOPTION_COST - ADOPTION_COST ) AS DIFFERENCE_IN_COST
+FROM ADOPTION_INFO
+ORDER BY BREED_NAME, ADOPTION_COST;
+
+
+
+
+
