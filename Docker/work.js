@@ -23,3 +23,26 @@
 
     // node 
     // npm run watch
+
+
+    // @ work 
+    // # to get branch up and running
+        // docker-compose build --no-cache
+            // if changes have occurred to the doctor files and a few others
+        // docker-compose up
+            // build up image
+            // http://localhost:8000/
+
+    // # compile sass new js
+        // npm run prod or npm run dev
+        // npm run watch
+            // watches for changes
+
+    // # to get into use artisan commands
+        // docker-compose exec payroll-app bash
+            // php artisan
+                // to run artisan commands
+
+    // # to get into use msql commands
+        // docker-compose exec practice-mysql bash
+

@@ -71,7 +71,7 @@
                 Route::get('/posts/{post}', [App\Http\Controllers\PostsController::class, 'show']);
                 // * option 3
                 Route::get('/posts/{post}', 'App\Http\Controllers\PostsController@show'); 
-    // @ route verbiage yes you so
+    // @ route verbiage
         // * GET /videos
             // list of videos
         // * GET /videos/create
@@ -95,4 +95,41 @@
         Route::delete('users/{id}', function ($id) {
             
         });
+
+        // # examples 
+            // # home
+                Route::get('/', function () {
+                    return view('welcome');
+                })->name('home.index'); // http://127.0.0.1:8000/
+
+                Route::get('/contact', function () {
+                    return '<h1>Contact me!</h1>';
+                })->name('home.contact'); // http://127.0.0.1:8000/contact
+
+                Route::get('/test', function () {
+                    return request('name');
+                })->name('home.test'); // http://127.0.0.1:8000/test?name=Russell%20Moore
+
+            // # user
+                Route::get('/user/{id}', function ($id = null) {
+                    return "User with id of {$id}";
+                })->name('user.id'); // http://127.0.0.1:8000/user/22  -  http://127.0.0.1:8000/user/Russell%20Moore = fails // path to patterns app\Providers\RouteServiceProvider.php // Works like the one below, but automatically checks for a number whenever we use a variable for ID {id}
+
+                // Route::get('/user/{id}', function ($id = null) {
+                //     return "User with id of {$id}";
+                // })->where([
+                //     'id' => '[0-9]+'
+                // ])->name('user.id'); // http://127.0.0.1:8000/user/22  -  http://127.0.0.1:8000/user/Russell%20Moore = fails
+
+                Route::get('/user/{name?}', function ($name = null) {
+                    return "User with name of \"{$name}\"";
+                })->name('user.name'); // http://127.0.0.1:8000/user/  or  http://127.0.0.1:8000/user/Russell%20Moore // optional {name?}
+            // # post
+                Route::get('/post/{slug}', function ($slug) {
+                    return $slug;
+                })->name('post.home'); // http://127.0.0.1:8000/post/hi-there
+
+                Route::get('/recent-posts/{daysAgo?}', function ($daysAgo = 0) {
+                    return 'Recent Posts - ' . $daysAgo . ' days ago';
+                })->name('post.recent.index'); // http://127.0.0.1:8000/recent-posts or http://127.0.0.1:8000/recent-posts/30 // optional {daysAgo?} // no //// {days-ago?}
 ?>
