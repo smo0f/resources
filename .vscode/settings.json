@@ -1,4 +1,7 @@
 {
     "python.linting.enabled": true,
-    "python.pythonPath": "C:\\Users\\truth\\AppData\\Local\\Programs\\Python\\Python38\\python.exe"
+    "python.pythonPath": "C:\\Users\\truth\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
+    "cSpell.words": [
+        "Prosses"
+    ]
 }

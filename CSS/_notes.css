@@ -20,3 +20,24 @@ selector {
 .title {
  color: unset;
 }
+
+/* 
+    To stop the page Load CSS Transitions
+
+    .preload * {
+        -webkit-transition: none !important;
+        -moz-transition: none !important;
+        -ms-transition: none !important;
+        -o-transition: none !important;
+        transition: none !important;
+    }
+
+    <script>
+        // To stop the page Load CSS Transitions   
+        // https://stackoverflow.com/questions/14389566/stop-css-transition-from-firing-on-page-load
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=332189
+        $( document ).ready(function() {
+            $("body").removeClass("preload");
+        });
+    </script>
+*/
