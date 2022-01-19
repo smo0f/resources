@@ -1,3 +1,0 @@
-// @ notes
-    // PayrollController
-        // Get subscriptions

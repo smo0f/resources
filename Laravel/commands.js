@@ -22,6 +22,7 @@
         // php artisan make:test UserTest
     // If you would like to create a test within the tests/Unit directory
         // php artisan make:test UserTest --unit
+        // php artisan make:test SimplifiedAPIController --unit/API
 
 // @ list of routes
     // php artisan route:list
@@ -54,7 +55,8 @@
         // php artisan make:migration create_connection_table --create
 
     // place holder
-        // php artisan migrate:fresh
+        // php artisan migrate
+        // php artisan migrate:rollback
 
     // if adding colum make sure to create a new migration for additional database columns
 
@@ -79,10 +81,12 @@
 // @ db seed
     // php artisan db:seed
     // php artisan db:seed --TestingSeeder 
+    // php artisan db:seed --class="PayrollGroupSeeder" // run class data
     // php artisan migrate:refresh --seed // rebuilds tables and seeds them
+    // php artisan migrate:fresh --seed
 
 // @ make controller
-    // php artisan make:controller PostsController
+    // php artisan make:controller PayrollApprovalController
 
     // make resource controller
         // php artisan make:controller projectsController --resource
@@ -411,15 +415,18 @@
         // php artisan migrate:fresh --seed
         // php artisan db:seed
 
-        // Branching / Example Branching and Merging
+        // * Branching / Example Branching and Merging
             // v1.12.0/v1.12.0
             // PA-987
             // Branched off of:
             // v1.12.0/v1.12.0/PA-987
             // v1.12.0/v1.12.0 => v1.12.0/PA-987
 
+            // review code on BitBucket
+
             // Before Pull Request OR QA:
-            // Merge
+            // Merge video 39:33 41:45***
+            // Pull parent branch to get most recent changes then merge with my branch
             // v1.12.0/v1.12.0 => v1.12.0/PA-987
 
             // Pull Request Approved/Merge
@@ -430,7 +437,64 @@
             // npm run dev (or) npm run prod
 
         // php artisan db:seed --TestingSeeder 
+        // if you need specific data run that seeder class itself
+            // php artisan db:seed --class="PayPeriodSeeder" // run class data
+        // php artisan migrate:refresh --seed // rebuilds tables and seeds them
+        // php artisan migrate:fresh --seed
+        // php artisan migrate:all --fresh --seed
+        // php artisan db:seed --database=testing --class="PayPeriodSeeder"
 
+        // * loading production data
+            // download production data - Google Drive - Dev Team - Test Data
+            // run - php artisan migrate:fresh
+            // Go into HeidiSQL - password secret
+            // run SQL file
+
+            // extra notes
+            // php artisan migrate:rollback --step=3
+            // php artisan migrate
+
+        // * deployment process
+            // backup database onto shared drive
+                // shared drives - Dev Team - Production Database Backups - {application}
+            // utilize Jenkins - http://jenkins.fpcl.fox-pest.com:8080/ 
+                // pull request, version into development
+                    // development into master
+            // deploy 
+            // merge master to deployment
+            // branch from deployment to new version branch 
+
+        // * tests
+            // php artisan test
+                // vendor/bin/phpunit // dose not work in work interment with out
+                    // docker-compose exec practice-app bash
+                // vendor/bin/phpunit -h
+                    // help info
+            // php artisan test 
+            // php artisan test --exclude slow
+            // php artisan test --filter SimplifiedAPIStructureTest
+            // php artisan test --filter SimplifiedAPIStructureTest::test_get_a_response_from_each_endpoint_single_record
+
+                // run single file test
+                    // vendor/bin/phpunit --filter  CreatePaystubDocumentTest
+                        // vendor/bin/phpunit --filter SimplifiedAPIGeneralEndpointsTest
+                        // vendor/bin/phpunit --filter SimplifiedAPIControllerTest
+                        // vendor/bin/phpunit --filter 'Integration\\API'
+                    // php artisan test --filter  CreatePaystubDocumentTest
+                    // php artisan test --filter 'Integration\\API'
+            
+            // api seeder
+            // php artisan db:seed --class="PayeeSeeder"
+            // php artisan db:seed --class="PayPeriodSeeder"
+            // php artisan db:seed --class="DeductionSeeder"
+            // php artisan db:seed --class="VariablePaySeeder"
+
+            // composer dump-auto 
+
+            // Check List/FoxTask
+            // php artisan schedule
+            // php artisan schedule:daily -h
+            // php artisan schedule:weekly -h
 
  // @ Problems
     // TODO: get link and error message********

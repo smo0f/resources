@@ -8,6 +8,12 @@
             let name = 'Sam';
             // change variable
             name = 'Joe';
+            // can't do this once name has ben declared
+            let name = 'Sam'; 
+            let name = 'Kim';
+            // var can
+            var name = 'Sam'; 
+            var name = 'Kim';
         // const = unable to change (type: number, obj, string, array)
             // make variable, can't change a constant
             const fName = 'Sam';
