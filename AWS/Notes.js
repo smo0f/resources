@@ -85,6 +85,12 @@
 
         // # Amazon CloudFront - CDN
 
+        // # pics
+            // 2022-01-19_8-59-14.png
+            // 2022-01-19_9-01-20.png
+            // 2022-01-19_9-03-27.png
+            // 2022-01-19_9-05-14.png
+
     // @ storage
 
         // # Instance stores - with EC2 instance
@@ -97,3 +103,64 @@
             // An EBS snapshot is an incremental backup
 
         // # Amazon Simple Storage Service (Amazon S3)
+            // object-level storage. Amazon S3 stores data as objects in buckets.
+            // # S3 Standard
+                // Designed for frequently accessed data
+                // Stores data in a minimum of three Availability Zones
+            // # S3 Standard-Infrequent Access (S3 Standard-IA)
+                // Ideal for infrequently accessed data
+                // Similar to S3 Standard but has a lower storage price and higher retrieval price
+            // # S3 One Zone-Infrequent Access (S3 One Zone-IA)
+                // Stores data in a single Availability Zone
+                // Has a lower storage price than S3 Standard-IA
+            // # S3 Intelligent-Tiering
+                // Ideal for data with unknown or changing access patterns
+                // Requires a small monthly monitoring and automation fee per object
+            // # S3 Glacier 
+                // Low-cost storage designed for data archiving
+                // Able to retrieve objects within a few minutes to hours
+            // # S3 Glacier Deep Archive
+                // Lowest-cost object storage class ideal for archiving
+                // Able to retrieve objects within 12 hours
+
+        // # Amazon Elastic File System (Amazon EFS)
+            // is a scalable file system used with AWS Cloud services and on-premises resources. As you add and remove files, Amazon EFS grows and shrinks automatically. It can scale on demand to petabytes without disrupting applications. 
+
+        // @ databases
+            // #Amazon Relational Database Service (Amazon RDS)
+                // Amazon RDS is a managed service that automates tasks such as hardware provisioning, database setup, patching, and backups.
+                // # Amazon RDS database engines
+                    // Amazon Aurora
+                    // PostgreSQL
+                    // MySQL
+                    // MariaDB
+                    // Oracle Database
+                    // Microsoft SQL Server
+                // # Amazon Aurora
+                    // It is up to five times faster than standard MySQL databases and up to three times faster than standard PostgreSQL databases.
+                    // Amazon Aurora helps to reduce your database costs by reducing unnecessary input/output (I/O) operations, while ensuring that your database resources remain reliable and available. 
+                    // Consider Amazon Aurora if your workloads require high availability. It replicates six copies of your data across three Availability Zones and continuously backs up your data to Amazon S3.
+            // # Amazon DynamoDB
+                // like MongoDB
+                // As the size of your database shrinks or grows, DynamoDB automatically scales to adjust for changes in capacity while maintaining consistent performance. 
+            // # Amazon Redshift
+                // * DW
+
+            // # AWS Database Migration Service (AWS DMS)
+                // AWS Database Migration Service (AWS DMS) enables you to migrate relational databases, nonrelational databases, and other types of data stores.
+
+            // # Additional database services
+                // To learn more, select the + symbol next to each category.
+                // * Amazon DocumentDB
+                    // is a document database service that supports MongoDB workloads.
+                // * Amazon Neptune
+                // * Amazon Quantum Ledger Database (Amazon QLDB)
+                // * Amazon Managed Blockchain
+                // * Amazon ElastiCache
+                // * Amazon DynamoDB Accelerator
+
+
+
+
+
+

@@ -122,7 +122,7 @@
 
 
 // @ Tinker commandline
-    // Psy Shell v0.10.8 (PHP 7.3.21 — cli) by Justin Hileman     
+    // Psy Shell v0.10.8 (PHP 7.3.21 - cli) by Justin Hileman     
     // >>> $Project = new App\Models\Project();
     // => App\Models\Project {#4369}
     // >>> $Project
@@ -435,6 +435,7 @@
         // * compile web packet and changes sass, JavaScript, css
             // npm run watch 
             // npm run dev (or) npm run prod
+            // npm run development
 
         // php artisan db:seed --TestingSeeder 
         // if you need specific data run that seeder class itself
@@ -443,6 +444,7 @@
         // php artisan migrate:fresh --seed
         // php artisan migrate:all --fresh --seed
         // php artisan db:seed --database=testing --class="PayPeriodSeeder"
+        // php artisan migrate:fresh --database=testing --seed
 
         // * loading production data
             // download production data - Google Drive - Dev Team - Test Data
@@ -472,6 +474,8 @@
                     // help info
             // php artisan test 
             // php artisan test --exclude slow
+            // php artisan test --group slow
+            // php artisan test --stop-on-failure
             // php artisan test --filter SimplifiedAPIStructureTest
             // php artisan test --filter SimplifiedAPIStructureTest::test_get_a_response_from_each_endpoint_single_record
 
@@ -495,6 +499,8 @@
             // php artisan schedule
             // php artisan schedule:daily -h
             // php artisan schedule:weekly -h
+
+            // php artisan route:cache
 
  // @ Problems
     // TODO: get link and error message********

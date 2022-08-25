@@ -117,10 +117,114 @@
 
     $a = new fakeString();
 
-    echo $a->addA()->addB()->getStr();
+    echo $a->addA()->addB()->addB()->addA()->getStr();
 ?>
 
 
+
+<?php
+    // @ accessing private variables
+    class Test
+    {
+        private $foo;
+
+        public function __construct($foo)
+        {
+            $this->foo = $foo;
+        }
+
+        public function __call($method, $args)
+        {
+            if (isset($this->$method)) {
+                $func = $this->$method;
+                return call_user_func_array($func, $args);
+            }
+        }
+
+        public function getFoo()
+        {
+            var_dump($this->foo);
+        }
+
+        private function bar()
+        {
+            echo 'Accessed the private method.';
+        }
+
+        public function baz(Test $other)
+        {
+            // We can change the private property:
+            $other->foo = 'hello';
+            var_dump($other->foo);
+
+            // We can also call the private method:
+            $other->bar();
+        }
+    }
+
+    $test = new Test('test');
+    $test->baz(new Test('other'));
+
+    // test 2
+    $test = new Test('test');
+    $test2 = new Test('test2');
+    $test->baz($test2);
+    var_dump('------------------------');
+    $test->getFoo();
+    $test2->getFoo();
+
+
+    // $test->bar = function ($obj) { $obj->foo = 'soso'; };
+    
+    
+    // test 4
+    // $test->bar = function ($obj) { $obj->foo = 'soso'; };
+    // $cl2 = function ($obj) { $obj->foo = 'soso'; };
+    // $bcl2 = Closure::bind($cl2, new Test('test3'), 'Test');
+    
+    // var_dump('------------------------');
+    // $test->getFoo();
+    // $test2->getFoo();
+    // $bcl2($test);
+    // $$test->getFoo();
+
+    // works
+    // ? https://www.php.net/manual/en/closure.bindto.php
+    // ? https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+    // ? https://stackoverflow.com/questions/18558183/phpunit-mockbuilder-set-mock-object-internal-property
+    // class A {
+    //     private static $sfoo = 1;
+    //     private $ifoo = 2;
+    // }
+    // $cl1 = static function() {
+    //     return A::$sfoo;
+    // };
+    // $cl2 = function() {
+    //     return $this->ifoo;
+    // };
+    
+    // $bcl1 = Closure::bind($cl1, null, 'A');
+    // $bcl2 = Closure::bind($cl2, new A(), 'A');
+    // echo $bcl1(), "\n";
+    // echo $bcl2(), "\n";
+
+    // works!!!
+    // ? https://stackoverflow.com/questions/2938004/how-to-add-a-new-method-to-a-php-object-on-the-fly
+    class Foo
+    {
+        public function __call($method, $args)
+        {
+            if (isset($this->$method)) {
+                $func = $this->$method;
+                return call_user_func_array($func, $args);
+            }
+        }
+    }
+
+    $foo = new Foo();
+    $foo->bar = function ($args) { echo "Hello, this function is added at runtime $args"; };
+    $foo->bar('eee');
+?>
 
 
 
