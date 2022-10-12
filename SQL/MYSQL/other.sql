@@ -29,7 +29,7 @@ FROM customers;
 
 -- @ JSON
 -- ? https://www.mysqltutorial.org/mysql-json/
-SELECT id, browser->>'$.name' browser
+SELECT id, browser->>'$.name' AS browser
 FROM events;
 
 SELECT browser->>'$.name' browser, 
@@ -67,6 +67,16 @@ SELECT
     COUNT(IF(status = 'Disputed', 1, NULL)) 'Disputed'
 FROM
     orders;
+
+
+-- 	select users.DisplayName, 
+--   posts.title as PostTitle, 
+--   sum(Case when Votes.VoteTypeID = 2 THEN 1 else 0 end) as UpVoteCount,
+--   sum(Case when Votes.VoteTypeID = 3 THEN 1 else 0 end) as DownVoteCount,
+--     from users 
+--     join Posts on Posts.OwnerUserId = Users.Id
+--     join Votes on Votes.PostId = Posts.Id
+--     group by Posts.Id, Posts.Title, users.DisplayName
 
 -- @ Loop
 -- ? https://www.mysqltutorial.org/stored-procedures-loop.aspx
@@ -125,4 +135,97 @@ WHERE id IN (
 	WHERE rank_order = 1
 );
 
+-- other -> interview questions -> SQL Server
+-- ======================================================================
+-- ? https://data.stackexchange.com/programmers/query/new
+SELECT TOP 100
+	--   *
+	u.id AS UserId,
+    u.DisplayName AS UserName,
+    p.id AS PostId,
+	p.Title AS PostTitle,
+	t.TagName,
+	COUNT(t.TagName) OVER(PARTITION BY t.TagName) AS TimesTagOccurred,
+    COUNT(t.TagName) OVER(PARTITION BY u.id, t.TagName) AS TimesTheUserUsedThisTag,
+	COUNT(t.id) OVER(PARTITION BY p.id) AS NumberOfTagsOnPost,
+	(
+		DENSE_RANK() OVER(PARTITION BY u.id ORDER BY p.id) 
+		+ DENSE_RANK() OVER(PARTITION BY u.id ORDER BY p.id DESC) 
+		- 1 
+	) AS NumberOfPostsFormUser,
+	COUNT(t.id) OVER(PARTITION BY u.id) AS NumberOfTagsFromUserOnAllPosts,
+	p.tags
+FROM Users u
+	INNER JOIN Posts p
+		ON p.OwnerUserId = u.id
+	INNER JOIN PostTags pt
+		ON pt.PostId = p.id
+	INNER JOIN Tags t
+		ON t.id = pt.TagId
+WHERE p.tags LIKE '%php%'
+  	OR p.tags LIKE '%python%'
+ORDER BY UserName, p.id;
 
+SELECT 
+	u.DisplayName,
+	COUNT(u.id) AS PostCount
+FROM Users u
+	INNER JOIN Posts p
+		ON p.OwnerUserId = u.id
+GROUP BY u.id, u.DisplayName
+HAVING COUNT(u.id) > 6;
+
+SELECT 
+	u.DisplayName,
+    p.id AS PostId,
+	p.Title AS PostTitle,
+	COUNT(IIF(v.VoteTypeId = 2, 1, NULL)) AS UpVoteCount, 
+	COUNT(IIF(v.VoteTypeId = 3, 1, NULL)) AS DownVoteCount
+FROM Users u
+	LEFT JOIN Posts p
+		ON p.OwnerUserId = u.id
+	LEFT JOIN Votes v
+		ON v.PostId = p.id
+GROUP BY p.id, p.Title, u.DisplayName;
+
+SELECT 
+	u.DisplayName,
+    p.id AS PostId,
+	p.Title AS PostTitle,
+	COUNT(IIF(v.VoteTypeId = 2, 1, NULL)) AS UpVoteCount, 
+	COUNT(IIF(v.VoteTypeId = 3, 1, NULL)) AS DownVoteCount
+FROM Users u
+	LEFT JOIN Posts p
+		ON p.OwnerUserId = u.id
+	LEFT JOIN Votes v
+		ON v.PostId = p.id
+GROUP BY p.id, p.Title, u.DisplayName
+ORDER BY p.Title;
+
+SELECT 
+	u.DisplayName,
+    p.id AS PostId,
+	p.Title AS PostTitle,
+	sum(Case when v.VoteTypeID = 2 THEN 1 else 0 end) AS UpVoteCount, 
+	sum(Case when v.VoteTypeID = 3 THEN 1 else 0 end) AS DownVoteCount
+FROM Users u
+	LEFT JOIN Posts p
+		ON p.OwnerUserId = u.id
+	LEFT JOIN Votes v
+		ON v.PostId = p.id
+WHERE p.id IN(97615,124890,209421)
+GROUP BY p.id, p.Title, u.DisplayName;
+
+select users.DisplayName, 
+  posts.title as PostTitle, 
+  sum(Case when Votes.VoteTypeID = 2 THEN 1 else 0 end) as UpVoteCount,
+  sum(Case when Votes.VoteTypeID = 3 THEN 1 else 0 end) as DownVoteCount,
+    from users 
+    join Posts on Posts.OwnerUserId = Users.Id
+    join Votes on Votes.PostId = Posts.Id
+    group by Posts.Id, Posts.Title, users.DisplayName
+
+SELECT *
+FROM VoteTypes;
+
+-- ======================================================================

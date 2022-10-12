@@ -402,14 +402,16 @@
         // docker-compose build // * if docker file changed
             // docker-compose up 
         // docker-compose down -v // wipes all the docker volumes 
-            // docker-compose up 
+        // docker-compose up 
         // docker-compose up // bring environment up
         // http://localhost:8000/
-
+        
         // docker-compose exec practice-app bash // remotes me in to the container
         // docker-compose exec payroll-app bash // remotes me in to the container
-            // php artisan
+        // php artisan
         // docker-compose exec practice-mysql bash // mysql container 
+        // docker-compose down // Stop and remove containers, networks
+        // docker-compose kill // Force stop service containers.
 
         // php artisan migrate:fresh
         // php artisan migrate:fresh --seed
