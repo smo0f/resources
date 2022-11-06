@@ -5,22 +5,20 @@ namespace Tests;
 use PHPUnit\Framework\TestCase;
 use Exception;
 use codingChallenges\designPatterns\QueryBuilder;
-require_once('codingChallenges\designPatterns\QueryBuilder.php');
+require_once('./codingChallenges\designPatterns\QueryBuilder.php'); // why do I need this**********
 // to run tests -> ./vendor/bin/phpunit .\tests\QueryBuilderTest.php or ./vendor/bin/phpunit --testdox tests
 
 final class QueryBuilderTest extends TestCase
 {
     protected function setUp(): void
     {
-        parent::setUp();
-
-        
+        parent::setUp(); 
     }
 
     public function test_QueryBuilder_class_makes_the_correct_sql_statement()
     {
         $sqlQuery = QueryBuilder::setTable('table_name')->where('id', '=', '33')->orderBy('column_name')->get();
-        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '33' ORDER BY column_name");
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '33' ORDER BY column_name;");
     }
 
     public function test_QueryBuilder_class_makes_the_correct_sql_statement_number_2()
@@ -28,9 +26,18 @@ final class QueryBuilderTest extends TestCase
         $queryBuilder = new QueryBuilder('table_name');
         $sqlQuery = $queryBuilder->where([
             ['id', '=', 34],
+        ])->whereOr('admin', '=', 1)->orderBy('column_name')->get();
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '34' OR admin = '1' ORDER BY column_name;");
+    }
+
+    public function test_QueryBuilder_class_makes_the_correct_sql_statement_number_3()
+    {
+        $queryBuilder = new QueryBuilder('table_name');
+        $sqlQuery = $queryBuilder->where([
+            ['id', '=', 34],
             // ['name', 'LIKE', 'somthing'] // TODO: need to fix
         ])->whereOr('admin', '=', 1)->orderBy('column_name')->get();
-        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = 34 AND name LIKE '%somthing%' OR admin = 1 ORDER BY column_name");
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '34' AND name LIKE '%somthing%' OR admin = '1' ORDER BY column_name;");
     }
 
     public function test_QueryBuilder_class_where_method_makes_sql_correctly_one_where_clause()
@@ -39,13 +46,19 @@ final class QueryBuilderTest extends TestCase
         $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '36';");
     }
 
-    public function test_QueryBuilder_class_where_method_makes_sql_correctly_three_where_clauses()
+    public function test_QueryBuilder_class_where_method_makes_sql_correctly_three_item_array_where_clause()
     {
         $sqlQuery = QueryBuilder::setTable('table_name')->where([
             ['id', '=', 36],
             ['name', '=', 'Sam'],
             ['age', '=', 30.5],
         ])->get();
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '36' AND name = 'Sam' AND age = '30.5';");
+    }
+
+    public function test_QueryBuilder_class_where_method_makes_sql_correctly_three_with_where_clauses()
+    {
+        $sqlQuery = QueryBuilder::setTable('table_name')->where('id', '=', 36)->where('name', '=', 'Sam')->where('age', '=', 30.5)->get();
         $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '36' AND name = 'Sam' AND age = '30.5';");
     }
 
@@ -166,5 +179,32 @@ final class QueryBuilderTest extends TestCase
             'number' => [33],
             'float' => [908.99],
         ];
+    }
+
+    public function test_where_or_builder_works()
+    {
+        $sqlQuery = QueryBuilder::setTable('table_name')->where('id', '=', 33)->whereOr('id', '=', 32)->get();
+
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '33' OR id = '32';");
+    }
+
+    public function test_where_or_builder_works_with_array_of_items()
+    {
+        $sqlQuery = QueryBuilder::setTable('table_name')->where('id', '=', 33)->whereOr([['id', '=', 32],['id', '=', 31]])->get();
+
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '33' OR id = '32' OR id = '31';");
+    }
+
+    public function test_where_or_builder_works_with_many_where_or_calls()
+    {
+        $sqlQuery = QueryBuilder::setTable('table_name')->where('id', '=', 33)->whereOr('id', '=', 32)->whereOr('id', '=', 31)->get();
+
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '33' OR id = '32' OR id = '31';");
+    }
+
+    public function test_order_by_method_works()
+    {
+        $sqlQuery = QueryBuilder::setTable('table_name')->where('id', '=', '33')->orderBy('column_name')->get();
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '33' ORDER BY column_name;");
     }
 }

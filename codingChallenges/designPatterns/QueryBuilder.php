@@ -1,7 +1,14 @@
 <?php
-    // just a prototype++
-    // no sql injection protection
+
     namespace codingChallenges\designPatterns;
+    // just a prototype++, tracer code
+    // no sql injection protection
+
+    // TODO: split into many classes for separation of logic and for testing***
+        // where && whereOr
+        // orderBy
+        // select
+        // others
 
     use Exception;
 
@@ -9,9 +16,9 @@
     {
         private $selectRaw;
         private $tableName;
-        private $groupBy;
-        private $whereClauses;
-        private $orderBy;
+        private $groupBy = [];
+        private $whereClauses = [];
+        private $orderBy = [];
 
         private $comparisonOperator = ['=','>=','>','<=','<','!=','<>'];
 
@@ -40,7 +47,7 @@
             return $this;
         }
 
-        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null ) : QueryBuilder
+        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
         {
 
             if (is_array($mainInput)) {
@@ -53,10 +60,25 @@
             return $this;
         }
 
-        // ! work on ***********************************************************************
-        public function whereOr() : QueryBuilder
+        // TODO: refactor this so that where and whereOr use the same code
+        public function whereOr($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
         {
+            if (is_array($mainInput)) {
+                $this->setWhereClauses($mainInput, 'whereOr', 'OR');
+                return $this;
+            }
+
+            // then set array
+            $this->setWhereClauses([[$mainInput, $comparisonOperator, $valueToFind]], 'whereOr', 'OR');
             return $this;
+        }
+
+        private function setWhereClauses(array $whereClauses, string $whereMethodType = 'where', string $whereConnectorType = 'AND')
+        {
+            foreach ($whereClauses as $whereClause) {
+                $this->validateWhereClause($whereClause, $whereMethodType);
+                $this->whereClauses[] = [$whereClause[0],$whereClause[1],$whereClause[2], $whereConnectorType];
+            }
         }
 
         private function validateWhereClause(array $whereClause, string $whereMethodType) : void
@@ -82,16 +104,21 @@
             }
         }
 
-        private function setWhereClauses(array $whereClauses, string $whereMethodType = 'where', string $whereConnectorType = 'AND')
+        // ! work on ***********************************************************************
+        public function orderBy($orderBy) : QueryBuilder
         {
-            foreach ($whereClauses as $whereClause) {
-                $this->validateWhereClause($whereClause, $whereMethodType);
-                $this->whereClauses[] = [$whereClause[0],$whereClause[1],$whereClause[2], $whereConnectorType];
+            if (is_array($orderBy)) {
+                foreach ($orderBy as $orderByValue) {
+                    // TODO:
+                    // validate id array
+                    // validate not number
+                    $this->orderBy[] = $orderByValue;
+                }
+                return $this;
             }
-        }
 
-        public function orderBy() : QueryBuilder
-        {
+            // then set array
+            $this->orderBy[] = $orderBy;
             return $this;
         }
 
@@ -115,7 +142,9 @@
                 $sql = $this->whereSqlBuilder($sql);
             }
             // order by
-            // $sql .= "FROM {$this->tableName} ";
+            if ($this->orderBy) {
+                $sql .= 'ORDER BY ' . implode(',',$this->orderBy);
+            }
             $sql = trim($sql) . ';';
             return $sql;
         }
