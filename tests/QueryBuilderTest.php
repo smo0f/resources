@@ -8,6 +8,17 @@ use codingChallenges\designPatterns\QueryBuilder;
 require_once('./codingChallenges\designPatterns\QueryBuilder.php'); // why do I need this**********
 // to run tests -> ./vendor/bin/phpunit .\tests\QueryBuilderTest.php or ./vendor/bin/phpunit --testdox tests
 
+
+// *** HOW DO I KNOW I HAVE TESTED EVERYTHING???
+// tests
+    // QueryBuilderTest
+        // QueryBuilderMethods
+            // WhereClausBuilder.php
+            // GroupByClausBuilder.php
+            // JoinClausBuilder.php
+            // ...
+        // QueryBuilder.php
+
 final class QueryBuilderTest extends TestCase
 {
     protected function setUp(): void

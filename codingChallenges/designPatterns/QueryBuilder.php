@@ -4,11 +4,22 @@
     // just a prototype++, tracer code
     // no sql injection protection
 
-    // TODO: split into many classes for separation of logic and for testing***
-        // where && whereOr
-        // orderBy
-        // select
-        // others
+    // *** use as a prototype, testing strategy, documentation strategy, code strategy, also find a way to do mocks
+
+    // ! work on ***********************************************************************
+    // TODO: split into many classes for separation of logic and for testing***, Single responsibility
+        // Component Integration (classes together), and Unit Tests
+            // Component Integration (classes together)
+                // QueryBuilder
+            // individual classes and Unit Tests
+                // where && whereOr
+                // orderBy
+                // select
+                // others
+
+    // TODO: Lots more work to do, lots of refactoring tests and code
+    // can do after Core Integration Laravel*****
+    // do smaller 
 
     use Exception;
 
@@ -104,7 +115,6 @@
             }
         }
 
-        // ! work on ***********************************************************************
         public function orderBy($orderBy) : QueryBuilder
         {
             if (is_array($orderBy)) {
