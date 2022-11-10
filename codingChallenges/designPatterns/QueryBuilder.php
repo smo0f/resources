@@ -21,6 +21,15 @@
     // can do after Core Integration Laravel*****
     // do smaller 
 
+    // unit test 
+        // where class
+        // order by class
+        // group by class
+            // parts
+    // component integration test
+        // QueryBuilder
+            // end
+
     use Exception;
 
     class QueryBuilder
@@ -58,6 +67,7 @@
             return $this;
         }
 
+        // @QueryBuilder:WhereBuilder https://www.notion.so/fox-pest/FoxPay-API-Documentation-v1-0-0-6eb02b79040d47e9b497c9c68c716944 (002)
         public function where($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
         {
 
