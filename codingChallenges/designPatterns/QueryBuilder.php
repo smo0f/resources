@@ -12,7 +12,6 @@
         // main QueryBuilder class
             // WhereClauseBuilder class
             // OrderByClauseBuilder class (add string)
-            // GroupByClauseBuilder class (add string)
             // SelectStatementBuilder class (add string, default *)
 
         // make test files for each of them
@@ -20,7 +19,6 @@
             // QueryBuilderTest (Component Integration)
             // WhereClauseBuilderTest (Unit Tests)
             // OrderByClauseBuilderTest (Unit Tests)
-            // GroupByClauseBuilderTest (Unit Tests)
             // SelectStatementBuilderTest (Unit Tests)
 
         // Notion Docs
@@ -43,8 +41,6 @@
     // unit test 
         // where class
         // order by class
-        // group by class
-            // parts
     // component integration test
         // QueryBuilder
             // end
@@ -53,15 +49,14 @@
 
     class QueryBuilder
     {
-        private $selectRaw;
-        private $tableName;
-        private $groupBy = [];
-        private $whereClauses = [];
-        private $orderBy = [];
+        private string $selectRaw;
+        private string $tableName;
+        private array $whereClauses = [];
+        private array $orderBy = [];
 
-        private $comparisonOperator = ['=','>=','>','<=','<','!=','<>'];
+        private array $comparisonOperator = ['=','>=','>','<=','<','!=','<>'];
 
-        public function __construct(string $tableName) 
+        public function __construct(string $tableName)
         {
             $tableName = trim($tableName);
             if (!$tableName) {
@@ -81,41 +76,24 @@
             return new QueryBuilder($tableName);
         }
 
-        public function groupBy() : QueryBuilder
-        {
-            return $this;
-        }
-
         // @QueryBuilder:where https://www.notion.so/fox-pest/Query-Builder-Docs-e41f8d9bf72249dbb72709ad45e5e694#1b87c3718c484c9eafb616ca15b8ff61 (002)
-        /*
-        / @fjghkjdhfjkg
-        dfhgkjhfdjkg
-        dfhjkghkjfgjbkjfdlkjgkjfdkhgkjhlkfdjlk gjjkfd
-        */
-        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
+        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null, string $whereMethodType = null, string $whereConnectorType = null) : QueryBuilder
         {
 
             if (is_array($mainInput)) {
-                $this->setWhereClauses($mainInput);
+                $this->setWhereClauses($mainInput, $whereMethodType, $whereConnectorType);
                 return $this;
             }
 
             // then set array
-            $this->setWhereClauses([[$mainInput, $comparisonOperator, $valueToFind]]);
+            $this->setWhereClauses([[$mainInput, $comparisonOperator, $valueToFind]], $whereMethodType, $whereConnectorType);
             return $this;
         }
 
-        // TODO: refactor this so that where and whereOr use the same code
+        // TODO: refactor this so that where and whereOr use the same code (done)
         public function whereOr($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
         {
-            if (is_array($mainInput)) {
-                $this->setWhereClauses($mainInput, 'whereOr', 'OR');
-                return $this;
-            }
-
-            // then set array
-            $this->setWhereClauses([[$mainInput, $comparisonOperator, $valueToFind]], 'whereOr', 'OR');
-            return $this;
+            return $this->where($mainInput, $comparisonOperator, $valueToFind, 'whereOr', 'OR');
         }
 
         private function setWhereClauses(array $whereClauses, string $whereMethodType = 'where', string $whereConnectorType = 'AND')
@@ -128,16 +106,16 @@
 
         private function validateWhereClause(array $whereClause, string $whereMethodType) : void
         {
-            $mainInput = isset($whereClause[0]) ? $whereClause[0] : null;
-            $comparisonOperator = isset($whereClause[1]) ? $whereClause[1] : null;
-            $valueToFind = isset($whereClause[2]) ? $whereClause[2] : null;
+            $mainInput = $whereClause[0] ?? null;
+            $comparisonOperator = $whereClause[1] ?? null;
+            $valueToFind = $whereClause[2] ?? null;
 
             if (gettype($mainInput) != 'string') {
                 throw new Exception("QueryBuilder class '{$whereMethodType}' method requires the 'column name' be a string, '" . gettype($mainInput) . "' given.");
             }
 
             if ($mainInput == null || $comparisonOperator == null || $valueToFind == null) {
-                throw new Exception("QueryBuilder class '{$whereMethodType}' method requires a 'column name', 'comparison operator', and a 'value to find' parameter if using the first paramiter as a column.");
+                throw new Exception("QueryBuilder class '{$whereMethodType}' method requires a 'column name', 'comparison operator', and a 'value to find' parameter if using the first parameter as a column.");
             }
 
             if (!in_array($comparisonOperator, $this->comparisonOperator)) {
@@ -170,9 +148,8 @@
         {
             $this->selectRaw = null;
             $this->tableName = null;
-            $this->groupBy = null;
-            $this->whereClauses = null;
-            $this->orderBy = null;
+            $this->whereClauses = [];
+            $this->orderBy = [];
         }
 
         public function get() : string
@@ -181,7 +158,7 @@
             $sql = 'SELECT ';
             $sql .= $this->selectRaw ?? '*' . ' ';
             $sql .= "FROM {$this->tableName} ";
-            // group by
+            // WHERE clause(s)
             if ($this->whereClauses) {
                 $sql = $this->whereSqlBuilder($sql);
             }
