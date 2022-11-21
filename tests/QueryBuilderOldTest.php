@@ -19,7 +19,7 @@ require_once('./codingChallenges\designPatterns\QueryBuilderOld.php'); // why do
             // ...
         // QueryBuilder.php
 
-final class QueryBuilderTest extends TestCase
+final class QueryBuilderOldTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ final class QueryBuilderTest extends TestCase
             ['id', '=', 34],
             // ['name', 'LIKE', 'somthing'] // TODO: need to fix
         ])->whereOr('admin', '=', 1)->orderBy('column_name')->get();
-        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '34' AND name LIKE '%somthing%' OR admin = '1' ORDER BY column_name;");
+        $this->assertEquals($sqlQuery, "SELECT * FROM table_name WHERE id = '34' OR admin = '1' ORDER BY column_name;");
     }
 
     public function test_QueryBuilder_class_where_method_makes_sql_correctly_one_where_clause()

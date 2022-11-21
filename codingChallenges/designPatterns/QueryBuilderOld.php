@@ -51,24 +51,24 @@
             $this->tableName = $tableName;
         }
         
-        public function selectRaw($selectRawString) : QueryBuilder
+        public function selectRaw($selectRawString) : QueryBuilderOld
         {
             $this->selectRaw = $selectRawString;
             return $this;
         }
 
-        public static function setTable($tableName) : QueryBuilder
+        public static function setTable($tableName) : QueryBuilderOld
         {
-            return new QueryBuilder($tableName);
+            return new QueryBuilderOld($tableName);
         }
 
-        public function groupBy() : QueryBuilder
+        public function groupBy() : QueryBuilderOld
         {
             return $this;
         }
 
         // @QueryBuilder:WhereBuilder https://www.notion.so/fox-pest/FoxPay-API-Documentation-v1-0-0-6eb02b79040d47e9b497c9c68c716944 (002)
-        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
+        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilderOld
         {
 
             if (is_array($mainInput)) {
@@ -82,7 +82,7 @@
         }
 
         // TODO: refactor this so that where and whereOr use the same code
-        public function whereOr($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
+        public function whereOr($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilderOld
         {
             if (is_array($mainInput)) {
                 $this->setWhereClauses($mainInput, 'whereOr', 'OR');
@@ -125,7 +125,7 @@
             }
         }
 
-        public function orderBy($orderBy) : QueryBuilder
+        public function orderBy($orderBy) : QueryBuilderOld
         {
             if (is_array($orderBy)) {
                 foreach ($orderBy as $orderByValue) {
@@ -187,7 +187,7 @@
     }
     
     // debugging
-    // var_dump($sqlQuery = QueryBuilder::setTable('table_name'));
+    // var_dump($sqlQuery = QueryBuilderOld::setTable('table_name'));
     // var_dump($sqlQuery->where('id', '=', 33));
     // var_dump($sqlQuery->orderBy('column_name'));
     // var_dump($sqlQuery->get());
