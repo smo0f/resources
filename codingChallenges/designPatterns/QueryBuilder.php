@@ -77,7 +77,7 @@
         }
 
         // @QueryBuilder:where https://www.notion.so/fox-pest/Query-Builder-Docs-e41f8d9bf72249dbb72709ad45e5e694#1b87c3718c484c9eafb616ca15b8ff61 (002)
-        public function where($mainInput, string $comparisonOperator = null, $valueToFind = null, string $whereMethodType = null, string $whereConnectorType = null) : QueryBuilder
+        public function where($mainInput, $comparisonOperator = null, $valueToFind = null, $whereMethodType = 'where', $whereConnectorType = 'AND') : QueryBuilder
         {
 
             if (is_array($mainInput)) {
@@ -91,12 +91,12 @@
         }
 
         // TODO: refactor this so that where and whereOr use the same code (done)
-        public function whereOr($mainInput, string $comparisonOperator = null, $valueToFind = null) : QueryBuilder
+        public function whereOr($mainInput, $comparisonOperator = null, $valueToFind = null) : QueryBuilder
         {
             return $this->where($mainInput, $comparisonOperator, $valueToFind, 'whereOr', 'OR');
         }
 
-        private function setWhereClauses(array $whereClauses, string $whereMethodType = 'where', string $whereConnectorType = 'AND')
+        private function setWhereClauses(array $whereClauses, $whereMethodType = 'where', $whereConnectorType = 'AND')
         {
             foreach ($whereClauses as $whereClause) {
                 $this->validateWhereClause($whereClause, $whereMethodType);
@@ -104,7 +104,7 @@
             }
         }
 
-        private function validateWhereClause(array $whereClause, string $whereMethodType) : void
+        private function validateWhereClause(array $whereClause, $whereMethodType) : void
         {
             $mainInput = $whereClause[0] ?? null;
             $comparisonOperator = $whereClause[1] ?? null;
